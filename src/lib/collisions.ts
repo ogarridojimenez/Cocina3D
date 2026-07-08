@@ -25,10 +25,9 @@ function getObjectBox(obj: FurnitureObject): THREE.Box3 {
   const sin = Math.sin(rot);
 
   const worldCorners = localCorners.map((c) => {
-    // Rotate around Y
     return new THREE.Vector3(
       c.x * cos - c.z * sin + obj.position.x,
-      c.y,
+      c.y + obj.posY,
       c.x * sin + c.z * cos + obj.position.z
     );
   });

@@ -15,6 +15,7 @@ export function CatalogPanel() {
     Electrodomésticos: false,
     Encimera: false,
     Accesorios: false,
+    Campana: false,
   });
 
   const toggle = (cat: Category) =>
@@ -25,6 +26,7 @@ export function CatalogPanel() {
     Electrodomésticos: "⚡",
     Encimera: "⬜",
     Accesorios: "🔧",
+    Campana: "💨",
   };
 
   return (

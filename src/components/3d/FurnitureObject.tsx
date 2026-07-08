@@ -137,7 +137,7 @@ export function FurnitureMesh({ object }: Props) {
       {/* Object group */}
       <group
         ref={groupRef}
-        position={[object.position.x, 0, object.position.z]}
+        position={[object.position.x, object.posY, object.position.z]}
         rotation={[0, object.rotation, 0]}
         scale={object.scale}
       >

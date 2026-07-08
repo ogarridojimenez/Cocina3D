@@ -57,6 +57,17 @@ export function ObjectProperties() {
               className="w-full rounded-md border border-slate-700 bg-slate-800/60 px-2.5 py-1.5 text-sm text-slate-200 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20"
             />
           </Field>
+          <Field label="Altura Y" unit="m">
+            <input
+              type="number"
+              min={0}
+              max={5}
+              step={0.05}
+              value={Math.round(obj.posY * 100) / 100}
+              onChange={(e) => updateObject(obj.id, { posY: Number(e.target.value) })}
+              className="w-full rounded-md border border-slate-700 bg-slate-800/60 px-2.5 py-1.5 text-sm text-slate-200 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20"
+            />
+          </Field>
           <Field label="Rotación" unit="°">
             <input
               type="number"

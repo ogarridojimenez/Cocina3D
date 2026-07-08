@@ -44,6 +44,7 @@ export function loadState() {
             width: o.width ?? 0.6,
             height: o.height ?? 0.6,
             depth: o.depth ?? 0.6,
+            posY: o.posY ?? 0,
           });
         }
       });

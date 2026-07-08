@@ -31,6 +31,7 @@ export interface FurnitureObject {
   id: string;
   type: ObjectType;
   position: Point2D;
+  posY: number;
   rotation: number;
   scale: number;
   animated: boolean;
@@ -174,6 +175,7 @@ export const useWallStore = create<WallStore>()(
           id: nextObjId(),
           type,
           position: position ?? { x: 0, z: 2 },
+          posY: cat.mountType === "wall" ? cat.mountHeight : cat.mountType === "counter" ? 0.85 : 0,
           rotation: 0,
           scale: 1,
           animated: false,

@@ -278,17 +278,148 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
       group.add(sinkBody);
 
       // Basin (depression)
-      const basinMat = new THREE.MeshStandardMaterial({
+      const basinMat2 = new THREE.MeshStandardMaterial({
         color: 0x555555,
         metalness: 0.7,
         roughness: 0.3,
       });
-      const basin = new THREE.Mesh(
+      const basin2 = new THREE.Mesh(
         new THREE.BoxGeometry(W * 0.7, H * 0.3, D * 0.6),
-        basinMat
+        basinMat2
       );
-      basin.position.set(0, H * 0.1, 0);
-      group.add(basin);
+      basin2.position.set(0, H * 0.1, 0);
+      group.add(basin2);
+      break;
+    }
+
+    // ── Dishwasher ────────────────────────────────────
+    case "dishwasher": {
+      const dwMat = new THREE.MeshStandardMaterial({ color: mainColor });
+      const body = new THREE.Mesh(new THREE.BoxGeometry(W, H * 0.85, D * 0.9), dwMat);
+      body.position.y = H * 0.425;
+      group.add(body);
+
+      // Door
+      const doorDw = new THREE.Mesh(
+        new THREE.BoxGeometry(W * 0.8, H * 0.8, 0.03),
+        new THREE.MeshStandardMaterial({ color: lightColor })
+      );
+      doorGroup = new THREE.Group();
+      doorGroup.position.set(W * 0.4, H * 0.425, D * 0.44);
+      doorDw.position.set(-W * 0.4, 0, 0);
+      doorGroup.add(doorDw);
+      group.add(doorGroup);
+
+      // Handle
+      const h3 = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, W * 0.3, 8),
+        new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.5 }));
+      h3.rotation.z = Math.PI / 2;
+      h3.position.set(0, H * 0.25, D * 0.45);
+      group.add(h3);
+      break;
+    }
+
+    // ── Range Hood ──────────────────────────────────
+    case "range-hood": {
+      const hoodMat = new THREE.MeshStandardMaterial({ color: mainColor, metalness: 0.4, roughness: 0.3 });
+      // Main body
+      const hood = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), hoodMat);
+      hood.position.y = H / 2;
+      group.add(hood);
+      // Chimney
+      const chimney = new THREE.Mesh(
+        new THREE.BoxGeometry(W * 0.4, 0.4, D * 0.3),
+        new THREE.MeshStandardMaterial({ color: darkColor, metalness: 0.3 })
+      );
+      chimney.position.set(0, H + 0.2, 0);
+      group.add(chimney);
+      break;
+    }
+
+    // ── Coffee Machine ─────────────────────────────
+    case "coffee-machine": {
+      const cmMat = new THREE.MeshStandardMaterial({ color: mainColor });
+      const body = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), cmMat);
+      body.position.y = H / 2;
+      group.add(body);
+      // Top detail
+      const top = new THREE.Mesh(
+        new THREE.BoxGeometry(W * 0.6, 0.02, D * 0.5),
+        new THREE.MeshStandardMaterial({ color: 0x333333 })
+      );
+      top.position.set(0, H + 0.01, D * 0.1);
+      group.add(top);
+      // Front panel (screen/buttons)
+      const panel = new THREE.Mesh(
+        new THREE.BoxGeometry(W * 0.4, H * 0.2, 0.01),
+        new THREE.MeshStandardMaterial({ color: 0x111111 })
+      );
+      panel.position.set(0, H * 0.5, D / 2 + 0.005);
+      group.add(panel);
+      break;
+    }
+
+    // ── Toaster ────────────────────────────────────
+    case "toaster": {
+      const tMat = new THREE.MeshStandardMaterial({ color: mainColor, metalness: 0.6, roughness: 0.2 });
+      const body = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), tMat);
+      body.position.y = H / 2;
+      group.add(body);
+      // Slot
+      const slot = new THREE.Mesh(
+        new THREE.BoxGeometry(W * 0.6, 0.01, D * 0.3),
+        new THREE.MeshStandardMaterial({ color: 0x222222 })
+      );
+      slot.position.set(0, H + 0.005, 0);
+      group.add(slot);
+      break;
+    }
+
+    // ── Dish Rack ──────────────────────────────────
+    case "dish-rack": {
+      const rMat = new THREE.MeshStandardMaterial({ color: mainColor, metalness: 0.5 });
+      // Base
+      const base = new THREE.Mesh(new THREE.BoxGeometry(W, 0.02, D), rMat);
+      base.position.y = 0.01;
+      group.add(base);
+      // Vertical bars
+      for (let i = 0; i < 5; i++) {
+        const bar = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.008, 0.008, H, 6),
+          rMat
+        );
+        bar.position.set(-W / 2 + 0.03 + i * (W / 4), H / 2, 0);
+        group.add(bar);
+      }
+      break;
+    }
+
+    // ── Island ─────────────────────────────────────
+    case "island": {
+      const islandMat = new THREE.MeshStandardMaterial({ color: mainColor });
+      // Base cabinets (two sides)
+      const cabW = W * 0.3;
+      const cabD = D * 0.45;
+      const cabH = H * 0.85;
+      for (const side of [-1, 1]) {
+        const cab = new THREE.Mesh(new THREE.BoxGeometry(cabW, cabH, cabD), islandMat);
+        cab.position.set(side * (W / 2 - cabW / 2), cabH / 2, -D / 4);
+        group.add(cab);
+      }
+      // Top surface
+      const top2 = new THREE.Mesh(
+        new THREE.BoxGeometry(W, 0.04, D),
+        new THREE.MeshStandardMaterial({ color: lightColor, roughness: 0.7 })
+      );
+      top2.position.y = H;
+      group.add(top2);
+      // Overhang lip
+      const lip = new THREE.Mesh(
+        new THREE.BoxGeometry(W + 0.05, 0.02, D + 0.05),
+        new THREE.MeshStandardMaterial({ color: lightColor })
+      );
+      lip.position.y = H - 0.02;
+      group.add(lip);
       break;
     }
   }
