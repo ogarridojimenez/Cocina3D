@@ -16,7 +16,11 @@ interface Props {
 export function FurnitureMesh({ object }: Props) {
   const groupRef = useRef<THREE.Group>(null);
   const doorRef = useRef<THREE.Group>(null);
+  const lightRef = useRef<THREE.PointLight>(null);
+  const spotRef = useRef<THREE.SpotLight>(null);
   const animProgress = useRef(object.animated ? 1 : 0);
+  const lightIntensity = useRef(object.lightOn ? 1 : 0);
+  const spotIntensity = useRef(object.lightOn ? 1 : 0);
 
   const selectObject = useWallStore((s) => s.selectObject);
   const toggleAnimation = useWallStore((s) => s.toggleAnimation);
@@ -62,23 +66,55 @@ export function FurnitureMesh({ object }: Props) {
 
   // Animation interpolation with spring-like smoothing
   useFrame((_, delta) => {
-    if (catalogItem.animationType === "none") return;
+    const hasDoor = catalogItem.animationType !== "none";
 
-    const target = object.animated ? 1 : 0;
-    // Spring-like: fast approach, smooth settle
-    const speed = delta * 8;
-    animProgress.current += (target - animProgress.current) * Math.min(speed, 1);
+    if (hasDoor) {
+      const target = object.animated ? 1 : 0;
+      const speed = delta * 8;
+      animProgress.current += (target - animProgress.current) * Math.min(speed, 1);
 
-    if (doorRef.current) {
-      const t = animProgress.current;
-      // Smooth step easing
-      const eased = t * t * (3 - 2 * t);
+      if (doorRef.current) {
+        const t = animProgress.current;
+        const eased = t * t * (3 - 2 * t);
 
-      if (catalogItem.animationType === "door") {
-        doorRef.current.rotation.y = eased * Math.PI * 0.45;
-      } else if (catalogItem.animationType === "drawer") {
-        doorRef.current.position.z = eased * 0.3;
+        if (catalogItem.animationType === "door") {
+          doorRef.current.rotation.y = eased * Math.PI * 0.45;
+        } else if (catalogItem.animationType === "drawer") {
+          doorRef.current.position.z = eased * 0.3;
+        }
       }
+    }
+
+    // Appliance lights: respond to lightOn toggle (user control)
+    const hasLight =
+      object.type === "oven" ||
+      object.type === "fridge" ||
+      object.type === "microwave" ||
+      object.type === "dishwasher" ||
+      object.type === "range-hood";
+
+    if (hasLight && lightRef.current) {
+      // Oven/fridge/microwave/dishwasher: light follows door when no lightOn set, or user toggles lightOn
+      const targetLight = object.lightOn ? 1 : (object.animated ? 0.8 : 0);
+      const lightSpeed = delta * 7;
+      lightIntensity.current += (targetLight - lightIntensity.current) * Math.min(lightSpeed, 1);
+      const eased = lightIntensity.current * lightIntensity.current * (3 - 2 * lightIntensity.current);
+
+      // Dishwasher: dim LED, others: normal interior light
+      if (object.type === "dishwasher") {
+        lightRef.current.intensity = eased * 0.15;
+      } else {
+        lightRef.current.intensity = eased;
+      }
+    }
+
+    // Range hood has a separate spot light
+    if (object.type === "range-hood" && spotRef.current) {
+      const targetSpot = object.lightOn ? 1 : 0;
+      const spotSpeed = delta * 6;
+      spotIntensity.current += (targetSpot - spotIntensity.current) * Math.min(spotSpeed, 1);
+      const eased = spotIntensity.current * spotIntensity.current * (3 - 2 * spotIntensity.current);
+      spotRef.current.intensity = eased * 1.0;
     }
   });
 
@@ -163,6 +199,38 @@ export function FurnitureMesh({ object }: Props) {
           />
           <meshBasicMaterial transparent opacity={0} />
         </mesh>
+
+        {/* Point light inside oven/fridge/microwave (linked to door) */}
+        {(object.type === "oven" || object.type === "fridge" || object.type === "microwave" || object.type === "dishwasher") && (
+          <pointLight
+            ref={lightRef}
+            position={[0, object.height * 0.4, -object.depth * 0.3]}
+            intensity={0}
+            distance={1.5}
+            decay={1}
+            color={
+              object.type === "fridge" ? "#E8F4FF" :
+              object.type === "microwave" ? "#FFEEDD" :
+              object.type === "dishwasher" ? "#00FF44" :
+              "#FFE0B0"
+            }
+          />
+        )}
+
+        {/* Spot light from range hood pointing down */}
+        {object.type === "range-hood" && (
+          <spotLight
+            ref={spotRef}
+            position={[0, -0.05, -0.1]}
+            angle={0.6}
+            penumbra={0.5}
+            distance={2.5}
+            decay={1}
+            intensity={0}
+            color="#FFFFFF"
+            target-position={[0, -1.5, 0]}
+          />
+        )}
       </group>
     </>
   );

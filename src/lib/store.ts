@@ -35,6 +35,7 @@ export interface FurnitureObject {
   rotation: number;
   scale: number;
   animated: boolean;
+  lightOn: boolean;
   color: string;
   width: number;
   height: number;
@@ -111,6 +112,9 @@ interface WallStore {
   selectObject: (id: string | null) => void;
   toggleAnimation: (id: string) => void;
   setGizmoMode: (mode: "translate" | "rotate") => void;
+  toggleLight: (id: string) => void;
+  shadowQuality: number;
+  setShadowQuality: (size: number) => void;
   clearScene: () => void;
   loadFullState: (data: { walls: Wall[]; objects: FurnitureObject[] }) => void;
 }
@@ -125,7 +129,8 @@ export const useWallStore = create<WallStore>()(
       isTransforming: false,
       objects: [],
       selectedObjectId: null,
-      gizmoMode: "translate",
+      gizmoMode: "translate" as const,
+      shadowQuality: 2048,
 
       // ── Wall actions ───────────────────────────────
 
@@ -181,6 +186,7 @@ export const useWallStore = create<WallStore>()(
           rotation: 0,
           scale: 1,
           animated: false,
+          lightOn: false,
           color: color ?? cat.defaultColor,
           width: cat.defaultWidth,
           height: cat.defaultHeight,
@@ -220,6 +226,15 @@ export const useWallStore = create<WallStore>()(
       },
 
       setGizmoMode: (mode) => set({ gizmoMode: mode }),
+
+      toggleLight: (id) =>
+        set((s) => ({
+          objects: s.objects.map((o) =>
+            o.id === id ? { ...o, lightOn: !o.lightOn } : o
+          ),
+        })),
+
+      setShadowQuality: (size) => set({ shadowQuality: size }),
 
       clearScene: () => {
         set({ walls: [], objects: [], selectedWallId: null, selectedObjectId: null });

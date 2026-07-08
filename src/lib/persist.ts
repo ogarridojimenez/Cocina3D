@@ -41,6 +41,7 @@ export function loadState() {
             rotation: o.rotation ?? 0,
             scale: o.scale ?? 1,
             animated: o.animated ?? false,
+            lightOn: o.lightOn ?? false,
             width: o.width ?? 0.6,
             height: o.height ?? 0.6,
             depth: o.depth ?? 0.6,

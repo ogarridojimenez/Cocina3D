@@ -9,6 +9,9 @@ export function ObjectProperties() {
   const updateObject = useWallStore((s) => s.updateObject);
   const removeObject = useWallStore((s) => s.removeObject);
   const toggleAnimation = useWallStore((s) => s.toggleAnimation);
+  const toggleLight = useWallStore((s) => s.toggleLight);
+  const shadowQuality = useWallStore((s) => s.shadowQuality);
+  const setShadowQuality = useWallStore((s) => s.setShadowQuality);
 
   const obj = objects.find((o) => o.id === selectedObjectId);
   if (!obj) return null;
@@ -173,11 +176,42 @@ export function ObjectProperties() {
         </div>
       )}
 
-      {/* GLTF notice */}
-      <div className="border-b border-slate-800 px-4 py-2">
-        <p className="text-[10px] text-slate-700 text-center italic">
-          Modelo 3D procedural · Reemplazable
-        </p>
+      {/* Light controls for appliances with built-in lights */}
+      {(obj.type === "oven" || obj.type === "fridge" || obj.type === "microwave" || obj.type === "dishwasher" || obj.type === "range-hood") && (
+        <div className="border-b border-slate-800 px-4 py-3">
+          <h3 className="mb-2.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            Iluminación
+          </h3>
+          <button
+            onClick={() => toggleLight(obj.id)}
+            className={`flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition ${
+              obj.lightOn
+                ? "border-yellow-700/40 bg-yellow-950/20 text-yellow-400 hover:bg-yellow-950/30"
+                : "border-slate-700/40 bg-slate-800/40 text-slate-400 hover:bg-slate-800/60 hover:text-slate-300"
+            }`}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+            {obj.lightOn ? "Apagar luz" : "Encender luz"}
+          </button>
+        </div>
+      )}
+
+      {/* Shadow quality */}
+      <div className="border-b border-slate-800 px-4 py-3">
+        <h3 className="mb-2.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3a6 6 0 0 0 0 12 6 6 0 0 0 0-12z"/><path d="M12 15v6"/><path d="M8 21h8"/></svg>
+          Calidad sombras
+        </h3>
+        <select
+          value={shadowQuality}
+          onChange={(e) => setShadowQuality(Number(e.target.value))}
+          className="w-full rounded-lg border border-slate-700/40 bg-slate-800/60 px-3 py-2 text-xs text-slate-300"
+        >
+          <option value={1024}>Baja (1024)</option>
+          <option value={2048}>Media (2048)</option>
+          <option value={4096}>Alta (4096)</option>
+        </select>
       </div>
 
       {/* Delete */}
