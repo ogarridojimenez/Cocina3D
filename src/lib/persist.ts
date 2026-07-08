@@ -23,6 +23,9 @@ export function loadState() {
     const data: PersistedState = JSON.parse(raw);
     const store = useWallStore.getState();
 
+    // GUARD: skip if data already loaded (prevents React Strict Mode double-exec)
+    if (store.walls.length > 0 || store.objects.length > 0) return;
+
     // Restore walls
     if (Array.isArray(data.walls)) {
       data.walls.forEach((w) => {

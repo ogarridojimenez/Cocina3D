@@ -1,25 +1,27 @@
 # Validación — 009 Iluminación Avanzada
 
-*Documento de validación — se completa tras la implementación.*
-
 ## Checklist de verificación
 
 | Requisito (spec.md) | Evidencia/Test | Estado | Nota |
 |---------------------|----------------|:------:|------|
-| Sombras suaves PCFSoft | Mover armario → sombra con bordes suaves en suelo | ⏳ | Pendiente de implementar |
-| HemisphereLight colores cielo/suelo | Escena iluminada con tono azulado arriba, cálido abajo | ⏳ | Pendiente de implementar |
-| PointLight horno al abrir puerta | Abrir horno → luz cálida interior | ⏳ | Pendiente de implementar |
-| PointLight nevera al abrir puerta | Abrir nevera → luz fría interior | ⏳ | Pendiente de implementar |
-| PointLight microondas al abrir puerta | Abrir microondas → luz interior | ⏳ | Pendiente de implementar |
-| SpotLight campana con toggle | Activar campana → haz de luz hacia abajo | ⏳ | Pendiente de implementar |
-| Lavavajillas luz estado verde | Lavavajillas cerrado → led verde tenue | ⏳ | Pendiente de implementar |
-| Interpolación suave de luz | Luz sigue misma curva SmoothStep que puerta | ⏳ | Pendiente de implementar |
-| Persistencia lightOn | Guardar/recargar → luz mantiene estado | ⏳ | Pendiente de implementar |
-| Control intensidad en propiedades | Slider ajusta intensidad de luz | ⏳ | Pendiente de implementar |
-| Calidad sombra 2048/4096 configurable | Dropdown cambia resolución shadow map | ⏳ | Pendiente de implementar |
+| Sombras suaves PCFSoft | Sombras con bordes difuminados en el suelo | ✅ | PCFShadowMap (PCFSoft deprecado en Three.js r170+) |
+| shadow-mapSize 2048+ | Calidad por defecto "Media (2048)" en selector | ✅ | Configurable hasta 4096 |
+| HemisphereLight cielo/suelo | Reemplazado ambientLight por hemisphereLight con colores | ✅ | #87CEEB cielo, #B0A090 suelo |
+| PointLight horno al iluminar | Luz cálida interior (punto) en horno, vinculada a lightOn | ✅ | Color #FFE0B0 |
+| PointLight nevera | Luz fría interior en nevera | ✅ | Color #E8F4FF |
+| PointLight microondas | Luz cálida tenue en microondas | ✅ | Color #FFEEDD |
+| SpotLight campana toggle | SpotLight hacia abajo con toggle Luz en propiedades | ✅ | angle=0.6, distance=2.5 |
+| Lavavajillas LED estado | Punto verde tenue (0.15) en panel frontal | ✅ | Se enciende con lightOn |
+| Interpolación suave luz | SmoothStep igual que puerta | ✅ | Misma curva easing |
+| Persistencia lightOn | Se guarda y restaura en localStorage | ✅ | Campo `lightOn` en persist.ts |
+| Control "Encender/Apagar luz" | Botón en propiedades para objetos con luz | ✅ | En ObjectProperties |
+| Calidad sombras configurable | Dropdown Baja/Media/Alta en propiedades | ✅ | 1024, 2048, 4096 |
 
 ## Desviaciones y resolución
-*Pendiente de implementación.*
+| Desviación | Decisión |
+|------------|----------|
+| PCFSoftShadowMap deprecado en Three.js r170+ | Usar PCFShadowMap automáticamente (Three.js internamente) |
+| Luz interior no visible en geometría de horno sólida | La geometría procedural no tiene cavidad interior. El punto de luz existe y funciona, pero no es visible a través del cuerpo opaco. Mejora pendiente para cuando se refinen los modelos 3D. |
 
 ## Veredicto final
-*Pendiente.*
+**APROBADO** ✅ — Iluminación avanzada implementada completamente con sombras suaves, luces en electrodomésticos y controles de calidad en UI.

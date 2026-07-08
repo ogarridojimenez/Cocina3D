@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo, useCallback, useEffect } from "react";
+import { useRef, useMemo, useCallback, useEffect, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { TransformControls as DreiTransformControls } from "@react-three/drei";
 import * as THREE from "three";
@@ -19,8 +19,6 @@ export function FurnitureMesh({ object }: Props) {
   const lightRef = useRef<THREE.PointLight>(null);
   const spotRef = useRef<THREE.SpotLight>(null);
   const animProgress = useRef(object.animated ? 1 : 0);
-  const lightIntensity = useRef(object.lightOn ? 1 : 0);
-  const spotIntensity = useRef(object.lightOn ? 1 : 0);
 
   const selectObject = useWallStore((s) => s.selectObject);
   const toggleAnimation = useWallStore((s) => s.toggleAnimation);
@@ -86,37 +84,25 @@ export function FurnitureMesh({ object }: Props) {
     }
 
     // Appliance lights: respond to lightOn toggle (user control)
-    const hasLight =
-      object.type === "oven" ||
-      object.type === "fridge" ||
-      object.type === "microwave" ||
-      object.type === "dishwasher" ||
-      object.type === "range-hood";
-
-    if (hasLight && lightRef.current) {
-      // Oven/fridge/microwave/dishwasher: light follows door when no lightOn set, or user toggles lightOn
-      const targetLight = object.lightOn ? 1 : (object.animated ? 0.8 : 0);
-      const lightSpeed = delta * 7;
-      lightIntensity.current += (targetLight - lightIntensity.current) * Math.min(lightSpeed, 1);
-      const eased = lightIntensity.current * lightIntensity.current * (3 - 2 * lightIntensity.current);
-
-      // Dishwasher: dim LED, others: normal interior light
-      if (object.type === "dishwasher") {
-        lightRef.current.intensity = eased * 0.15;
-      } else {
-        lightRef.current.intensity = eased;
-      }
-    }
-
-    // Range hood has a separate spot light
-    if (object.type === "range-hood" && spotRef.current) {
-      const targetSpot = object.lightOn ? 1 : 0;
-      const spotSpeed = delta * 6;
-      spotIntensity.current += (targetSpot - spotIntensity.current) * Math.min(spotSpeed, 1);
-      const eased = spotIntensity.current * spotIntensity.current * (3 - 2 * spotIntensity.current);
-      spotRef.current.intensity = eased * 1.0;
-    }
+    // Direct setting via useEffect below, useFrame only for door animation
   });
+
+  // Direct light control via useEffect (reliable, no frame-timing issues)
+  const lightType =
+    object.type === "oven" || object.type === "fridge" || object.type === "microwave" || object.type === "dishwasher"
+      ? "point"
+      : object.type === "range-hood" ? "spot" : "none";
+
+  useEffect(() => {
+    if (lightType === "point" && lightRef.current) {
+      const targetLight = object.lightOn ? 1 : (object.animated ? 0.8 : 0);
+      const intensity = object.type === "dishwasher" ? targetLight * 0.15 : targetLight;
+      lightRef.current.intensity = intensity;
+    }
+    if (lightType === "spot" && spotRef.current) {
+      spotRef.current.intensity = object.lightOn ? 1.0 : 0;
+    }
+  }, [lightType, object.lightOn, object.animated]);
 
   // Select on pointer down (like walls)
   const handlePointerDown = useCallback(
