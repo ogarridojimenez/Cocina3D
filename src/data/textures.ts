@@ -46,12 +46,12 @@ export const wallTextures: TextureDef[] = [
   },
   {
     id: "tile",
-    name: "Azulejo piedra",
+    name: "Azulejo blanco",
     category: "pared",
     maps: {
-      albedo: "/textures/tile/albedo.jpg",
-      normal: "/textures/tile/normal.jpg",
-      roughness: "/textures/tile/roughness.jpg",
+      albedo: "/textures/tile/albedo.png",
+      normal: "/textures/tile/normal.png",
+      roughness: "/textures/tile/roughness.png",
     },
     scale: 0.3,
   },
