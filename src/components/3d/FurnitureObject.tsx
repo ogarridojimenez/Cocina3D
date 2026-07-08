@@ -60,17 +60,19 @@ export function FurnitureMesh({ object }: Props) {
     });
   }, [group, isColliding, object.color]);
 
-  // Animation interpolation
+  // Animation interpolation with spring-like smoothing
   useFrame((_, delta) => {
     if (catalogItem.animationType === "none") return;
 
     const target = object.animated ? 1 : 0;
-    const speed = delta * (1 / 0.3);
+    // Spring-like: fast approach, smooth settle
+    const speed = delta * 8;
     animProgress.current += (target - animProgress.current) * Math.min(speed, 1);
 
     if (doorRef.current) {
       const t = animProgress.current;
-      const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      // Smooth step easing
+      const eased = t * t * (3 - 2 * t);
 
       if (catalogItem.animationType === "door") {
         doorRef.current.rotation.y = eased * Math.PI * 0.45;
