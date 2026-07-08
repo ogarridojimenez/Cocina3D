@@ -13,8 +13,10 @@
 
 ## Siguiente 🔜
 
-1. **007-animacion-objetos** — Animación de puertas, cajones, electrodomésticos (abrir/cerrar/encender) — ya implementada parcialmente en 003
-2. **008-exportacion-compartir** — Exportar diseño a GLTF, capturas de pantalla, enlace compartible
+1. **009-iluminacion-avanzada** — Luces puntuales, ambientales y sombras realistas
+2. **010-materiales-avanzados** — Soporte para texturas PBR completas en muebles (mapas de normal, roughness, metalness)
+3. **011-interfaz-usuario-v2** — Mejoras en el UX del catálogo y panel de propiedades
+
 
 ## Backlog 💡
 

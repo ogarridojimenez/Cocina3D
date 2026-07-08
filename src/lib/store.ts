@@ -223,6 +223,7 @@ export const useWallStore = create<WallStore>()(
 
       clearScene: () => {
         set({ walls: [], objects: [], selectedWallId: null, selectedObjectId: null });
+        localStorage.removeItem("cocina3d-walls");
       },
 
       loadFullState: (data) => {
