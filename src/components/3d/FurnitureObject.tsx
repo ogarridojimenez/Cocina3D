@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef, useMemo, useCallback } from "react";
+import { useRef, useMemo, useCallback, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { TransformControls as DreiTransformControls } from "@react-three/drei";
 import * as THREE from "three";
 import { useWallStore, type FurnitureObject } from "@/lib/store";
 import { getCatalogItem } from "@/data/catalog";
 import { buildGeometry } from "@/components/editor/proceduralGeometry";
+import { checkObjectCollision } from "@/lib/collisions";
 
 interface Props {
   object: FurnitureObject;
@@ -23,15 +24,41 @@ export function FurnitureMesh({ object }: Props) {
   const selectedObjectId = useWallStore((s) => s.selectedObjectId);
   const gizmoMode = useWallStore((s) => s.gizmoMode);
   const updateObject = useWallStore((s) => s.updateObject);
+  const objects = useWallStore((s) => s.objects);
+  const walls = useWallStore((s) => s.walls);
 
   const isSelected = selectedObjectId === object.id;
   const catalogItem = getCatalogItem(object.type);
+
+  // Collision detection
+  const isColliding = useMemo(
+    () => checkObjectCollision(object.id, objects, walls).collides,
+    [object.id, object.position.x, object.position.z, object.width, object.height, object.depth, object.rotation, object.scale, objects, walls]
+  );
 
   // Build geometry when type, color, or dimensions change
   const { group, doorGroup } = useMemo(
     () => buildGeometry(object.type, object.color, object.width, object.height, object.depth),
     [object.type, object.color, object.width, object.height, object.depth]
   );
+
+  // Tint material red when colliding (must be AFTER group is created)
+  useEffect(() => {
+    group.traverse((child) => {
+      if (child instanceof THREE.Mesh && child.material) {
+        const mat = child.material as THREE.MeshStandardMaterial;
+        if (isColliding) {
+          mat.color.setHex(0xff4444);
+          mat.emissive.setHex(0xff0000);
+          mat.emissiveIntensity = 0.3;
+        } else {
+          mat.color.set(object.color);
+          mat.emissive.setHex(0x000000);
+          mat.emissiveIntensity = 0;
+        }
+      }
+    });
+  }, [group, isColliding, object.color]);
 
   // Animation interpolation
   useFrame((_, delta) => {

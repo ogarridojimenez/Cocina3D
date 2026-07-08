@@ -12,10 +12,9 @@
 
 ## Siguiente 🔜
 
-1. **005-parametrizacion-objetos** — Objetos paramétricos: cambiar dimensiones, materiales, colores en tiempo real
-5. **005-colisiones-fisica** — Motor de física básico: objetos colisionan entre sí y con paredes, gravedad, snapping a superficies
-6. **006-animacion-objetos** — Animación de puertas, cajones, electrodomésticos (abrir/cerrar/encender)
-7. **007-exportacion-compartir** — Exportar diseño a GLTF, capturas de pantalla, enlace compartible
+1. **006-colisiones-fisica** — Motor de física básico: objetos colisionan entre sí y con paredes, gravedad, snapping a superficies
+2. **007-animacion-objetos** — Animación de puertas, cajones, electrodomésticos (abrir/cerrar/encender) ya implementada parcialmente
+3. **008-exportacion-compartir** — Exportar diseño a GLTF, capturas de pantalla, enlace compartible
 
 ## Backlog 💡
 
