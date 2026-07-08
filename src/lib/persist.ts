@@ -1,0 +1,51 @@
+import { useWallStore } from "./store";
+
+const STORAGE_KEY = "cocina3d-walls";
+
+interface PersistedState {
+  walls: any[];
+  objects: any[];
+}
+
+export function saveState() {
+  const { walls, objects } = useWallStore.getState();
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ walls, objects }));
+  } catch {
+    // Silently fail (quota exceeded etc.)
+  }
+}
+
+export function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data: PersistedState = JSON.parse(raw);
+    const store = useWallStore.getState();
+
+    // Restore walls
+    if (Array.isArray(data.walls)) {
+      data.walls.forEach((w) => {
+        store.addWall(w.start, w.end, w.height, w.thickness, w.color);
+      });
+    }
+
+    // Restore objects
+    if (Array.isArray(data.objects)) {
+      data.objects.forEach((o) => {
+        store.addObject(o.type, o.position, o.color);
+        // The addObject generates a new id, so we need to update with saved state
+        const lastObj = useWallStore.getState().objects.at(-1);
+        if (lastObj) {
+          store.updateObject(lastObj.id, {
+            rotation: o.rotation ?? 0,
+            scale: o.scale ?? 1,
+            animated: o.animated ?? false,
+          });
+        }
+      });
+    }
+  } catch {
+    // Corrupted storage, silently ignore
+  }
+}
