@@ -9,6 +9,7 @@
 3. **003-catalogo-objetos** — Catálogo de muebles y electrodomésticos 3D, arrastrar y soltar en la escena ✅
 4. **004-texturas-paredes** — Texturas PBR en paredes (yeso, ladrillo, azulejo, madera) con tileado proporcional ✅
 5. **005-parametrizacion-objetos** — Dimensiones editables (ancho/alto/fondo) en objetos del catálogo ✅
+6. **006-colisiones-objetos** — Colisiones AABB entre objetos y paredes con feedback visual rojo ✅
 
 ## Siguiente 🔜
 

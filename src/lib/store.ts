@@ -94,7 +94,7 @@ interface WallStore {
   selectedObjectId: string | null;
   gizmoMode: "translate" | "rotate";
 
-  addWall: (start: Point2D, end: Point2D, height: number, thickness: number, color?: string) => void;
+  addWall: (start: Point2D, end: Point2D, height: number, thickness: number, color?: string, textureId?: string | null) => void;
   updateWall: (id: string, updates: Partial<Wall>) => void;
   removeWall: (id: string) => void;
   selectWall: (id: string | null) => void;
@@ -126,7 +126,7 @@ export const useWallStore = create<WallStore>()(
 
       // ── Wall actions ───────────────────────────────
 
-      addWall: (start, end, height, thickness, color = "#e0e0e0") => {
+      addWall: (start, end, height, thickness, color = "#e0e0e0", textureId = null) => {
         const wall: Wall = {
           id: nextWallId(),
           start,
@@ -134,7 +134,7 @@ export const useWallStore = create<WallStore>()(
           height,
           thickness,
           color,
-          textureId: null,
+          textureId,
         };
         set((s) => ({ walls: [...s.walls, wall] }));
       },

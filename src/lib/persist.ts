@@ -26,7 +26,7 @@ export function loadState() {
     // Restore walls
     if (Array.isArray(data.walls)) {
       data.walls.forEach((w) => {
-        store.addWall(w.start, w.end, w.height, w.thickness, w.color);
+        store.addWall(w.start, w.end, w.height, w.thickness, w.color, w.textureId ?? null);
       });
     }
 
@@ -41,6 +41,9 @@ export function loadState() {
             rotation: o.rotation ?? 0,
             scale: o.scale ?? 1,
             animated: o.animated ?? false,
+            width: o.width ?? 0.6,
+            height: o.height ?? 0.6,
+            depth: o.depth ?? 0.6,
           });
         }
       });
