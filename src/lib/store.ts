@@ -111,6 +111,8 @@ interface WallStore {
   selectObject: (id: string | null) => void;
   toggleAnimation: (id: string) => void;
   setGizmoMode: (mode: "translate" | "rotate") => void;
+  clearScene: () => void;
+  loadFullState: (data: { walls: Wall[]; objects: FurnitureObject[] }) => void;
 }
 
 export const useWallStore = create<WallStore>()(
@@ -218,6 +220,14 @@ export const useWallStore = create<WallStore>()(
       },
 
       setGizmoMode: (mode) => set({ gizmoMode: mode }),
+
+      clearScene: () => {
+        set({ walls: [], objects: [], selectedWallId: null, selectedObjectId: null });
+      },
+
+      loadFullState: (data) => {
+        set({ walls: data.walls, objects: data.objects });
+      },
     }),
     { limit: 50 }
   )

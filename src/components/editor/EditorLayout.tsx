@@ -71,10 +71,19 @@ export function EditorLayout() {
           </span>
           <span className="text-[10px] text-slate-600">|</span>
           <nav className="flex items-center gap-1 text-[11px]">
-            <span className="rounded px-2 py-0.5 text-slate-500 hover:text-slate-300 cursor-default">Archivo</span>
-            <span className="rounded px-2 py-0.5 text-slate-500 hover:text-slate-300 cursor-default">Editar</span>
-            <span className="rounded px-2 py-0.5 text-slate-500 hover:text-slate-300 cursor-default">Ver</span>
-            <span className="rounded px-2 py-0.5 text-slate-500 hover:text-slate-300 cursor-default">Ayuda</span>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent("cocina3d-export", { detail: { type: "new" } }))}
+              className="rounded px-2 py-0.5 text-slate-500 hover:text-slate-300 transition-colors"
+            >Nuevo</button>
+            <span className="text-slate-700">|</span>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent("cocina3d-export", { detail: { type: "save" } }))}
+              className="rounded px-2 py-0.5 text-slate-500 hover:text-slate-300 transition-colors"
+            >Guardar</button>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent("cocina3d-export", { detail: { type: "load" } }))}
+              className="rounded px-2 py-0.5 text-slate-500 hover:text-slate-300 transition-colors"
+            >Abrir</button>
           </nav>
         </div>
         <div className="flex items-center gap-1.5">
@@ -198,7 +207,7 @@ export function EditorLayout() {
             }
           >
             <Canvas
-              gl={{ antialias: true }}
+              gl={{ antialias: true, preserveDrawingBuffer: true }}
               dpr={[1, 1.5]}
               camera={{ position: [8, 6, 8], fov: 45, near: 0.1, far: 100 }}
               onPointerMissed={() => {
