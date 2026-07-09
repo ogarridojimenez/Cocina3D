@@ -184,7 +184,6 @@ export function FurnitureMesh({ object }: Props) {
           <mesh
             position={[0, 0, 0]}
             rotation={[-Math.PI / 2, 0, 0]}
-            onPointerDown={handlePointerDown}
             onDoubleClick={handleDoubleClick}
           >
             <planeGeometry args={[object.width, object.depth]} />

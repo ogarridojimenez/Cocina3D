@@ -14,55 +14,45 @@ export function ObjectOutliner() {
 
   const entries = useMemo(() => {
     const list: { id: string; label: string; icon: string; type: "wall" | "object" }[] = [];
-
-    // Walls
     walls.forEach((w, i) => {
       list.push({ id: w.id, label: `Pared #${i + 1}`, icon: "🧱", type: "wall" });
     });
-
-    // Objects
     objects.forEach((o) => {
       const cat = getCatalogItem(o.type);
-      const name = cat?.name ?? o.type;
-      const icon = cat?.icon ?? "📦";
-      list.push({ id: o.id, label: name, icon, type: "object" });
+      list.push({ id: o.id, label: cat?.name ?? o.type, icon: cat?.icon ?? "📦", type: "object" });
     });
-
     return list;
   }, [walls, objects]);
+
+  const currentValue = selectedWallId ?? selectedObjectId ?? "";
+
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const id = e.target.value;
+    if (!id) { selectWall(null); selectObject(null); return; }
+    const entry = entries.find((en) => en.id === id);
+    if (entry?.type === "wall") selectWall(id);
+    else selectObject(id);
+  };
 
   if (entries.length === 0) return null;
 
   return (
-    <div className="border-b border-slate-800">
-      <div className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+    <div className="px-3 py-2 border-b border-slate-800 flex items-center gap-2">
+      <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 shrink-0">
         Escena
-      </div>
-      <div className="max-h-48 overflow-y-auto">
-        {entries.map((entry) => {
-          const isSelected =
-            entry.type === "wall"
-              ? selectedWallId === entry.id
-              : selectedObjectId === entry.id;
-          return (
-            <button
-              key={entry.id}
-              onClick={() => {
-                if (entry.type === "wall") selectWall(entry.id);
-                else selectObject(entry.id);
-              }}
-              className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-[11px] transition-colors ${
-                isSelected
-                  ? "bg-blue-600/15 text-blue-300 border-l-2 border-blue-500"
-                  : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-300 border-l-2 border-transparent"
-              }`}
-            >
-              <span className="text-[13px] shrink-0">{entry.icon}</span>
-              <span className="truncate">{entry.label}</span>
-            </button>
-          );
-        })}
-      </div>
+      </label>
+      <select
+        value={currentValue}
+        onChange={handleChange}
+        className="flex-1 bg-slate-800/80 border border-slate-700 rounded px-2 py-1 text-[11px] text-slate-300 outline-none focus:border-blue-500/50 transition-colors appearance-none cursor-pointer"
+      >
+        <option value="">— Ninguno —</option>
+        {entries.map((entry) => (
+          <option key={entry.id} value={entry.id}>
+            {entry.icon} {entry.label}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
