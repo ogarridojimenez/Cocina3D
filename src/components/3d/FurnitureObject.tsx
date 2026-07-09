@@ -47,12 +47,12 @@ export function FurnitureMesh({ object }: Props) {
     [object.type, object.color, object.width, object.height, object.depth, object.materialId, object.lWidthX, object.lWidthZ, object.hasSink]
   );
 
-  // Floor material (PBR or plain color)
+  // Floor material (CC0 texture or procedural)
   const floorMaterial = useMemo(
     () => object.type === "floor" && object.materialId
-      ? buildPBRMaterial(object.materialId, object.color)
+      ? buildPBRMaterial(object.materialId, object.color, object.width, object.depth)
       : null,
-    [object.type, object.materialId, object.color]
+    [object.type, object.materialId, object.color, object.width, object.depth]
   );
 
   // Tint material red when colliding (must be AFTER group is created)

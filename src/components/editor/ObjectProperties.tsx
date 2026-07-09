@@ -223,11 +223,13 @@ export function ObjectProperties() {
           <option value="steel">Acero Cepillado</option>
           <option value="brass">Latón</option>
           <option disabled className="text-slate-600">── Suelo ──</option>
-          <option value="floor-tile">Baldosa</option>
-          <option value="floor-parquet">Parquet</option>
-          <option value="floor-slate">Pizarra</option>
-          <option value="floor-terrazzo">Terrazo</option>
-          <option value="floor-concrete">Hormigón</option>
+          <option value="floor-tile">Baldosa cerámica</option>
+          <option value="floor-ceramic">Baldosa beige</option>
+          <option value="floor-herringbone">Espina de pez roble</option>
+          <option value="floor-marble">Mármol blanco</option>
+          <option value="floor-wood-dark">Madera oscura</option>
+          <option value="floor-porcelain">Gres porcelánico</option>
+          <option value="floor-slate">Pizarra gris</option>
         </select>
       </div>
 

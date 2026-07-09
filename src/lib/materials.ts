@@ -1,5 +1,18 @@
 import * as THREE from "three";
-import { getMaterial } from "@/data/materials";
+import { MATERIALS, getMaterial, type MaterialDef } from "@/data/materials";
+import { getFloorTextureDef } from "@/data/floorTextures";
+
+// ── Texture cache for CC0 floor textures ──────────
+const cc0TextureCache = new Map<string, THREE.Texture>();
+
+function loadCC0Texture(url: string): THREE.Texture {
+  if (cc0TextureCache.has(url)) return cc0TextureCache.get(url)!;
+  const loader = new THREE.TextureLoader();
+  const tex = loader.load(url);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  cc0TextureCache.set(url, tex);
+  return tex;
+}
 
 // ── Cache de texturas ──────────────────────────────────
 const textureCache = new Map<string, THREE.CanvasTexture>();
@@ -217,12 +230,37 @@ function generateNormalMap(materialId: string): THREE.CanvasTexture {
 // ── Main builder ────────────────────────────────────────
 export function buildPBRMaterial(
   materialId: string | null,
-  baseColor: string
+  baseColor: string,
+  floorWidth?: number,
+  floorDepth?: number
 ): THREE.MeshStandardMaterial {
   if (!materialId) {
     return new THREE.MeshStandardMaterial({ color: baseColor });
   }
 
+  // ── CC0 floor texture from Poly Haven ──────────
+  const floorTex = getFloorTextureDef(materialId);
+  if (floorTex) {
+    const albedo = loadCC0Texture(floorTex.maps.albedo);
+    const normal = loadCC0Texture(floorTex.maps.normal);
+    const roughness = loadCC0Texture(floorTex.maps.roughness);
+
+    const repeatU = (floorWidth ?? 4) / floorTex.scale;
+    const repeatV = (floorDepth ?? 3) / floorTex.scale;
+    [albedo, normal, roughness].forEach((tex) => {
+      tex.repeat.set(Math.max(repeatU, 0.5), Math.max(repeatV, 0.5));
+    });
+
+    return new THREE.MeshStandardMaterial({
+      map: albedo,
+      normalMap: normal,
+      roughnessMap: roughness,
+      roughness: 1,
+      metalness: 0,
+    });
+  }
+
+  // ── Procedural material (existing) ──────────────
   const def = getMaterial(materialId);
   if (!def) {
     return new THREE.MeshStandardMaterial({ color: baseColor });
