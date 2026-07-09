@@ -7,3 +7,4 @@ dist/
 .next/trace
 *.sst
 next-swc*.node
+tsconfig.tsbuildinfo
