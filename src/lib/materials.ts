@@ -1,8 +1,9 @@
 import * as THREE from "three";
 import { MATERIALS, getMaterial, type MaterialDef } from "@/data/materials";
 import { getFloorTextureDef } from "@/data/floorTextures";
+import { getMaterialTextureDef } from "@/data/materialTextures";
 
-// ── Texture cache for CC0 floor textures ──────────
+// ── Texture cache for CC0 textures ──────────
 const cc0TextureCache = new Map<string, THREE.Texture>();
 
 function loadCC0Texture(url: string): THREE.Texture {
@@ -14,7 +15,7 @@ function loadCC0Texture(url: string): THREE.Texture {
   return tex;
 }
 
-// ── Cache de texturas ──────────────────────────────────
+// ── Cache de texturas procedurales ──────────
 const textureCache = new Map<string, THREE.CanvasTexture>();
 
 function generateAlbedo(materialId: string, baseColor: string): THREE.CanvasTexture {
@@ -147,14 +148,12 @@ function generateNormalMap(materialId: string): THREE.CanvasTexture {
   const cacheKey = `normal-${materialId}`;
   if (textureCache.has(cacheKey)) return textureCache.get(cacheKey)!;
 
-  // Reuse the same generator for perceived similarity
   const canvas = document.createElement("canvas");
   canvas.width = 256;
   canvas.height = 256;
   const ctx = canvas.getContext("2d")!;
   const imgData = ctx.createImageData(256, 256);
 
-  // Generate height field
   const height = new Float32Array(256 * 256);
   for (let y = 0; y < 256; y++) {
     for (let x = 0; x < 256; x++) {
@@ -231,22 +230,44 @@ function generateNormalMap(materialId: string): THREE.CanvasTexture {
 export function buildPBRMaterial(
   materialId: string | null,
   baseColor: string,
-  floorWidth?: number,
-  floorDepth?: number
+  objWidth?: number,
+  objDepth?: number
 ): THREE.MeshStandardMaterial {
   if (!materialId) {
     return new THREE.MeshStandardMaterial({ color: baseColor });
   }
 
-  // ── CC0 floor texture from Poly Haven ──────────
+  // ── Priority 1: CC0 material texture from Poly Haven ──
+  const materialTex = getMaterialTextureDef(materialId);
+  if (materialTex) {
+    const albedo = loadCC0Texture(materialTex.maps.albedo);
+    const normal = loadCC0Texture(materialTex.maps.normal);
+    const roughness = loadCC0Texture(materialTex.maps.roughness);
+
+    const repeatU = (objWidth ?? 1) / materialTex.scale;
+    const repeatV = (objDepth ?? 1) / materialTex.scale;
+    [albedo, normal, roughness].forEach((tex) => {
+      tex.repeat.set(Math.max(repeatU, 0.3), Math.max(repeatV, 0.3));
+    });
+
+    return new THREE.MeshStandardMaterial({
+      map: albedo,
+      normalMap: normal,
+      roughnessMap: roughness,
+      roughness: materialTex.roughness,
+      metalness: materialTex.metalness,
+    });
+  }
+
+  // ── Priority 2: CC0 floor texture from Poly Haven ──────────
   const floorTex = getFloorTextureDef(materialId);
   if (floorTex) {
     const albedo = loadCC0Texture(floorTex.maps.albedo);
     const normal = loadCC0Texture(floorTex.maps.normal);
     const roughness = loadCC0Texture(floorTex.maps.roughness);
 
-    const repeatU = (floorWidth ?? 4) / floorTex.scale;
-    const repeatV = (floorDepth ?? 3) / floorTex.scale;
+    const repeatU = (objWidth ?? 4) / floorTex.scale;
+    const repeatV = (objDepth ?? 3) / floorTex.scale;
     [albedo, normal, roughness].forEach((tex) => {
       tex.repeat.set(Math.max(repeatU, 0.5), Math.max(repeatV, 0.5));
     });
@@ -260,7 +281,7 @@ export function buildPBRMaterial(
     });
   }
 
-  // ── Procedural material (existing) ──────────────
+  // ── Priority 3: Procedural material (fallback) ──────
   const def = getMaterial(materialId);
   if (!def) {
     return new THREE.MeshStandardMaterial({ color: baseColor });
