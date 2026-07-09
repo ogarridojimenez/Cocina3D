@@ -1,12 +1,12 @@
 "use client";
 
 import { useRef, useMemo, useCallback } from "react";
-import { Mesh, RepeatWrapping } from "three";
+import { Mesh, RepeatWrapping, Shape, Path, ExtrudeGeometry, BoxGeometry } from "three";
 import {
   TransformControls as DreiTransformControls,
   useTexture,
 } from "@react-three/drei";
-import { useWallStore, type Wall as WallType } from "@/lib/store";
+import { useWallStore, type Wall as WallType, type FurnitureObject } from "@/lib/store";
 import { getTextureDef, type TextureDef } from "@/data/textures";
 
 function getWallTransform(wall: WallType) {
@@ -27,17 +27,96 @@ function getWallTransform(wall: WallType) {
   };
 }
 
+/**
+ * Build wall geometry — with optional rectangular holes for windows.
+ * Uses a custom Shape + ExtrudeGeometry when holes are present,
+ * otherwise falls back to a simple BoxGeometry.
+ */
+function buildWallGeometry(
+  length: number,
+  height: number,
+  thickness: number,
+  holes: { x: number; y: number; w: number; h: number }[]
+) {
+  if (holes.length === 0) {
+    // No holes → standard BoxGeometry
+    return new BoxGeometry(length, height, thickness);
+  }
+
+  // Shape in the XY plane (wall front face), extruded along Z for thickness
+  const shape = new Shape();
+  const hw = length / 2;
+  const hh = height / 2;
+  shape.moveTo(-hw, -hh);
+  shape.lineTo(hw, -hh);
+  shape.lineTo(hw, hh);
+  shape.lineTo(-hw, hh);
+  shape.closePath();
+
+  for (const hole of holes) {
+    const path = new Path();
+    const hx = hole.x - hw; // Convert from centered coords to shape-local
+    const hy = hole.y - hh;
+    path.moveTo(hx, hy);
+    path.lineTo(hx + hole.w, hy);
+    path.lineTo(hx + hole.w, hy + hole.h);
+    path.lineTo(hx, hy + hole.h);
+    path.closePath();
+    shape.holes.push(path);
+  }
+
+  const extrudeSettings = {
+    steps: 1,
+    depth: thickness,
+    bevelEnabled: false,
+  };
+
+  const geometry = new ExtrudeGeometry(shape, extrudeSettings);
+  // Center the extrusion on Z axis
+  geometry.translate(0, 0, -thickness / 2);
+  return geometry;
+}
+
+/**
+ * Get windows that belong to a specific wall, in wall-local coordinates.
+ */
+function getWindowsOnWall(wall: WallType, objects: FurnitureObject[]): { x: number; y: number; w: number; h: number }[] {
+  const dx = wall.end.x - wall.start.x;
+  const dz = wall.end.z - wall.start.z;
+  const length = Math.sqrt(dx * dx + dz * dz);
+  if (length < 0.001) return [];
+
+  return objects
+    .filter((o) => o.type === "window" && o.wallId === wall.id)
+    .map((win) => {
+      const offset = win.wallOffset ?? 0.5;
+      // Wall-local X coordinate (centered)
+      const localX = (offset - 0.5) * length;
+      // Wall-local Y coordinate (centered): posY + height/2 is the center of the window
+      // relative to floor. The wall center is at height/2.
+      const localY = (win.posY + win.height / 2) - wall.height / 2;
+      return {
+        x: localX - win.width / 2,
+        y: localY - win.height / 2,
+        w: win.width,
+        h: win.height,
+      };
+    });
+}
+
 /** Subcomponente que aplica textura (useTexture solo se llama si hay textura) */
 function TexturedWallMesh({
   wall,
   t,
   texDef,
   isSelected,
+  holes,
 }: {
   wall: WallType;
   t: NonNullable<ReturnType<typeof getWallTransform>>;
   texDef: TextureDef;
   isSelected: boolean;
+  holes: { x: number; y: number; w: number; h: number }[];
 }) {
   const meshRef = useRef<Mesh>(null);
   const selectWall = useWallStore((s) => s.selectWall);
@@ -74,17 +153,23 @@ function TexturedWallMesh({
     if (!meshRef.current) return;
     const newX = meshRef.current.position.x;
     const newZ = meshRef.current.position.z;
-    const dx = newX - t.midX;
-    const dz = newZ - t.midZ;
-    if (Math.abs(dx) > 0.001 || Math.abs(dz) > 0.001) {
+    const dx2 = newX - t.midX;
+    const dz2 = newZ - t.midZ;
+    if (Math.abs(dx2) > 0.001 || Math.abs(dz2) > 0.001) {
       updateWall(wall.id, {
-        start: { x: wall.start.x + dx, z: wall.start.z + dz },
-        end: { x: wall.end.x + dx, z: wall.end.z + dz },
+        start: { x: wall.start.x + dx2, z: wall.start.z + dz2 },
+        end: { x: wall.end.x + dx2, z: wall.end.z + dz2 },
       });
     }
   }, [t, wall.id, wall.start, wall.end, updateWall, setIsTransforming]);
 
   const extendedLength = t.length + wall.thickness;
+
+  // Build geometry with or without holes
+  const wallGeometry = useMemo(
+    () => buildWallGeometry(extendedLength, t.height, t.thickness, holes),
+    [extendedLength, t.height, t.thickness, holes]
+  );
 
   return (
     <>
@@ -107,7 +192,7 @@ function TexturedWallMesh({
           if (drawMode === "none") selectWall(wall.id);
         }}
       >
-        <boxGeometry args={[extendedLength, t.height, t.thickness]} />
+        <primitive object={wallGeometry} attach="geometry" />
         <meshStandardMaterial
           color={isSelected ? "#3B82F6" : wall.color}
           map={albedo}
@@ -128,10 +213,12 @@ function SolidWallMesh({
   wall,
   t,
   isSelected,
+  holes,
 }: {
   wall: WallType;
   t: NonNullable<ReturnType<typeof getWallTransform>>;
   isSelected: boolean;
+  holes: { x: number; y: number; w: number; h: number }[];
 }) {
   const meshRef = useRef<Mesh>(null);
   const selectWall = useWallStore((s) => s.selectWall);
@@ -149,17 +236,23 @@ function SolidWallMesh({
     if (!meshRef.current) return;
     const newX = meshRef.current.position.x;
     const newZ = meshRef.current.position.z;
-    const dx = newX - t.midX;
-    const dz = newZ - t.midZ;
-    if (Math.abs(dx) > 0.001 || Math.abs(dz) > 0.001) {
+    const dx2 = newX - t.midX;
+    const dz2 = newZ - t.midZ;
+    if (Math.abs(dx2) > 0.001 || Math.abs(dz2) > 0.001) {
       updateWall(wall.id, {
-        start: { x: wall.start.x + dx, z: wall.start.z + dz },
-        end: { x: wall.end.x + dx, z: wall.end.z + dz },
+        start: { x: wall.start.x + dx2, z: wall.start.z + dz2 },
+        end: { x: wall.end.x + dx2, z: wall.end.z + dz2 },
       });
     }
   }, [t, wall.id, wall.start, wall.end, updateWall, setIsTransforming]);
 
   const extendedLength = t.length + wall.thickness;
+
+  // Build geometry with or without holes
+  const wallGeometry = useMemo(
+    () => buildWallGeometry(extendedLength, t.height, t.thickness, holes),
+    [extendedLength, t.height, t.thickness, holes]
+  );
 
   return (
     <>
@@ -182,7 +275,7 @@ function SolidWallMesh({
           if (drawMode === "none") selectWall(wall.id);
         }}
       >
-        <boxGeometry args={[extendedLength, t.height, t.thickness]} />
+        <primitive object={wallGeometry} attach="geometry" />
         <meshStandardMaterial
           color={isSelected ? "#3B82F6" : wall.color}
           roughness={0.8}
@@ -198,9 +291,13 @@ function SolidWallMesh({
 /** Componente principal — decide si usar textura o color sólido */
 export function Wall({ wall }: { wall: WallType }) {
   const selectedWallId = useWallStore((s) => s.selectedWallId);
+  const objects = useWallStore((s) => s.objects);
   const t = useMemo(() => getWallTransform(wall), [wall]);
   const isSelected = selectedWallId === wall.id;
   const texDef = useMemo(() => getTextureDef(wall.textureId), [wall.textureId]);
+
+  // Compute holes for windows on this wall
+  const holes = useMemo(() => getWindowsOnWall(wall, objects), [wall, objects]);
 
   if (!t) return null;
 
@@ -211,9 +308,10 @@ export function Wall({ wall }: { wall: WallType }) {
         t={t}
         texDef={texDef}
         isSelected={isSelected}
+        holes={holes}
       />
     );
   }
 
-  return <SolidWallMesh wall={wall} t={t} isSelected={isSelected} />;
+  return <SolidWallMesh wall={wall} t={t} isSelected={isSelected} holes={holes} />;
 }
