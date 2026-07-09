@@ -88,12 +88,14 @@ export function checkObjectCollision(
 ): { collides: boolean; withObjectId: string | null; withWallId: string | null } {
   const obj = objects.find((o) => o.id === objId);
   if (!obj) return { collides: false, withObjectId: null, withWallId: null };
+  if (obj.type === "floor") return { collides: false, withObjectId: null, withWallId: null };
 
   const objBox = getObjectBox(obj);
 
-  // Check against other objects
+  // Check against other objects (skip floors — everything sits on them)
   for (const other of objects) {
     if (other.id === objId) continue;
+    if (other.type === "floor") continue;
     const otherBox = getObjectBox(other);
     if (objBox.intersectsBox(otherBox)) {
       return { collides: true, withObjectId: other.id, withWallId: null };
