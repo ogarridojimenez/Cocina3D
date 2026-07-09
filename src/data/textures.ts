@@ -12,10 +12,11 @@ export interface TextureDef {
 }
 
 export const wallTextures: TextureDef[] = [
+  // ── Azulejos (cocina) ──
   {
     id: "long-white-tiles",
     name: "Azulejo blanco alargado",
-    category: "pared",
+    category: "cocina",
     maps: {
       albedo: "/textures/wall/long_white_tiles/albedo.jpg",
       normal: "/textures/wall/long_white_tiles/normal.jpg",
@@ -26,7 +27,7 @@ export const wallTextures: TextureDef[] = [
   {
     id: "square-tiled-wall",
     name: "Azulejo cuadrado",
-    category: "pared",
+    category: "cocina",
     maps: {
       albedo: "/textures/wall/square_tiled_wall/albedo.jpg",
       normal: "/textures/wall/square_tiled_wall/normal.jpg",
@@ -34,54 +35,44 @@ export const wallTextures: TextureDef[] = [
     },
     scale: 0.3,
   },
+  // ── Revestimientos lisos ──
   {
-    id: "rounded-square-tiled-wall",
-    name: "Azulejo esquinas redondas",
-    category: "pared",
+    id: "painted-concrete-02",
+    name: "Hormigón pintado claro",
+    category: "liso",
     maps: {
-      albedo: "/textures/wall/rounded_square_tiled_wall/albedo.jpg",
-      normal: "/textures/wall/rounded_square_tiled_wall/normal.jpg",
-      roughness: "/textures/wall/rounded_square_tiled_wall/roughness.jpg",
+      albedo: "/textures/wall/painted_concrete_02/albedo.jpg",
+      normal: "/textures/wall/painted_concrete_02/normal.jpg",
+      roughness: "/textures/wall/painted_concrete_02/roughness.jpg",
     },
-    scale: 0.3,
+    scale: 0.4,
   },
   {
-    id: "anti-skid-tiles",
-    name: "Cerámica texturada",
-    category: "pared",
+    id: "painted-concrete",
+    name: "Hormigón pintado gris",
+    category: "liso",
     maps: {
-      albedo: "/textures/wall/anti_skid_tiles/albedo.jpg",
-      normal: "/textures/wall/anti_skid_tiles/normal.jpg",
-      roughness: "/textures/wall/anti_skid_tiles/roughness.jpg",
+      albedo: "/textures/wall/painted_concrete/albedo.jpg",
+      normal: "/textures/wall/painted_concrete/normal.jpg",
+      roughness: "/textures/wall/painted_concrete/roughness.jpg",
     },
-    scale: 0.3,
+    scale: 0.4,
   },
   {
-    id: "interior-tiles",
-    name: "Baldosa interior",
-    category: "pared",
+    id: "plastered-wall",
+    name: "Estuco liso",
+    category: "liso",
     maps: {
-      albedo: "/textures/wall/interior_tiles/albedo.jpg",
-      normal: "/textures/wall/interior_tiles/normal.jpg",
-      roughness: "/textures/wall/interior_tiles/roughness.jpg",
-    },
-    scale: 0.3,
-  },
-  {
-    id: "beige-wall",
-    name: "Pared beige lisa",
-    category: "pared",
-    maps: {
-      albedo: "/textures/wall/beige_wall_001/albedo.jpg",
-      normal: "/textures/wall/beige_wall_001/normal.jpg",
-      roughness: "/textures/wall/beige_wall_001/roughness.jpg",
+      albedo: "/textures/wall/plastered_wall/albedo.jpg",
+      normal: "/textures/wall/plastered_wall/normal.jpg",
+      roughness: "/textures/wall/plastered_wall/roughness.jpg",
     },
     scale: 0.4,
   },
   {
     id: "clay-plaster",
     name: "Estuco arcilla",
-    category: "pared",
+    category: "liso",
     maps: {
       albedo: "/textures/wall/clay_plaster/albedo.jpg",
       normal: "/textures/wall/clay_plaster/normal.jpg",
@@ -89,10 +80,22 @@ export const wallTextures: TextureDef[] = [
     },
     scale: 0.4,
   },
+  // ── Mármol / piedra ──
+  {
+    id: "marble-tiles",
+    name: "Mármol blanco",
+    category: "piedra",
+    maps: {
+      albedo: "/textures/wall/marble_tiles/albedo.jpg",
+      normal: "/textures/wall/marble_tiles/normal.jpg",
+      roughness: "/textures/wall/marble_tiles/roughness.jpg",
+    },
+    scale: 0.3,
+  },
   {
     id: "marble-mosaic",
     name: "Mosaico mármol",
-    category: "pared",
+    category: "piedra",
     maps: {
       albedo: "/textures/wall/marble_mosaic_tiles/albedo.jpg",
       normal: "/textures/wall/marble_mosaic_tiles/normal.jpg",
@@ -101,9 +104,6 @@ export const wallTextures: TextureDef[] = [
     scale: 0.3,
   },
 ];
-
-// Legacy texture catalog (for compatibility, same textures)
-export const textureCatalog = [{ id: "none", name: "Color sólido", category: "none", maps: { albedo: "" }, scale: 1 }];
 
 export function getTextureDef(id: string | null): TextureDef | null {
   if (!id || id === "none") return null;
