@@ -46,6 +46,13 @@ export interface FurnitureObject {
   lWidthX: number;   // Extensión L en eje +X (derecha)
   lWidthZ: number;   // Extensión L en eje +Z (adelante)
   hasSink: boolean; // fregadero integrado
+  // Armario modular configurable
+  shelves: number;   // número de baldas
+  doorType: "closed" | "glass" | "open"; // tipo de puerta
+  swingSide: "left" | "right"; // lado de apertura para puertas en pared
+  // Window specific
+  wallId?: string;        // ID of the wall this window belongs to
+  wallOffset?: number;    // Position along wall (0-1 normalized)
 }
 
 // ── Scene store (original) ─────────────────────────
@@ -203,11 +210,50 @@ export const useWallStore = create<WallStore>()(
           lWidthX: 0,
           lWidthZ: 0,
           hasSink: false,
+          shelves: type === "armario-modular" ? 2 : 0,
+          doorType: type === "armario-modular" ? "glass" : "closed",
+          swingSide: "left",
           color: color ?? cat.defaultColor,
           width: cat.defaultWidth,
           height: cat.defaultHeight,
           depth: cat.defaultDepth,
         };
+
+        // Auto-assign windows to nearest wall
+        if (type === "window") {
+          const walls = get().walls;
+          if (walls.length > 0) {
+            // Find the nearest wall segment to the window's position
+            let nearestWall = walls[0];
+            let minDist = Infinity;
+            const wx = obj.position.x;
+            const wz = obj.position.z;
+            for (const wall of walls) {
+              const dx = wall.end.x - wall.start.x;
+              const dz = wall.end.z - wall.start.z;
+              const length = Math.sqrt(dx * dx + dz * dz);
+              if (length < 0.001) continue;
+              // Project window position onto wall line
+              const t = ((wx - wall.start.x) * dx + (wz - wall.start.z) * dz) / (length * length);
+              const clampedT = Math.max(0, Math.min(1, t));
+              const projX = wall.start.x + clampedT * dx;
+              const projZ = wall.start.z + clampedT * dz;
+              const dist = Math.sqrt((wx - projX) ** 2 + (wz - projZ) ** 2);
+              if (dist < minDist) {
+                minDist = dist;
+                nearestWall = wall;
+                obj.wallOffset = clampedT;
+                obj.wallId = wall.id;
+                // Snap position to wall
+                obj.position.x = projX;
+                obj.position.z = projZ;
+                // Set rotation to match wall angle
+                obj.rotation = Math.atan2(dz, dx);
+              }
+            }
+          }
+        }
+
         set((s) => ({
           objects: [...s.objects, obj],
           selectedWallId: null,

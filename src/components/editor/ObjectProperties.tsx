@@ -211,6 +211,79 @@ function DimensionsTab({
           </label>
         </div>
       )}
+
+      {/* Encimera L config */}
+      {obj.type === "countertop-l" && (
+        <div className="space-y-2 border-t border-slate-800 pt-2 mt-2">
+          <h4 className="text-[10px] font-semibold uppercase text-slate-500">
+            Extensión L
+          </h4>
+          <Field label="Ancho L (X)" unit="m">
+            <input
+              type="number"
+              step="0.1"
+              min="0"
+              value={obj.lWidthX ?? 0}
+              onChange={(e) =>
+                useWallStore.getState().setCounterProps(obj.id, {
+                  lWidthX: Math.max(0, parseFloat(e.target.value) || 0),
+                })
+              }
+              className="w-full rounded-md border border-slate-700 bg-slate-800/60 px-2.5 py-1.5 text-sm text-slate-200 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20"
+            />
+          </Field>
+          <Field label="Ancho L (Z)" unit="m">
+            <input
+              type="number"
+              step="0.1"
+              min="0"
+              value={obj.lWidthZ ?? 0}
+              onChange={(e) =>
+                useWallStore.getState().setCounterProps(obj.id, {
+                  lWidthZ: Math.max(0, parseFloat(e.target.value) || 0),
+                })
+              }
+              className="w-full rounded-md border border-slate-700 bg-slate-800/60 px-2.5 py-1.5 text-sm text-slate-200 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20"
+            />
+          </Field>
+        </div>
+      )}
+
+      {/* Armario modular config */}
+      {obj.type === "armario-modular" && (
+        <div className="space-y-2 border-t border-slate-800 pt-2 mt-2">
+          <h4 className="text-[10px] font-semibold uppercase text-slate-500">
+            Configuración armario
+          </h4>
+          <Field label="Baldas" unit="">
+            <input
+              type="number"
+              step="1"
+              min="0"
+              max="6"
+              value={obj.shelves ?? 2}
+              onChange={(e) =>
+                updateObject(obj.id, {
+                  shelves: Math.max(0, Math.min(6, parseInt(e.target.value) || 0)),
+                })
+              }
+              className="w-full rounded-md border border-slate-700 bg-slate-800/60 px-2.5 py-1.5 text-sm text-slate-200 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20"
+            />
+          </Field>
+          <div>
+            <label className="mb-1 block text-[11px] text-slate-400">Tipo puerta</label>
+            <select
+              value={obj.doorType ?? "glass"}
+              onChange={(e) => updateObject(obj.id, { doorType: e.target.value })}
+              className="w-full rounded-md border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-xs text-slate-200"
+            >
+              <option value="glass">Acristalada</option>
+              <option value="closed">Cerrada</option>
+              <option value="open">Abierta (sin puerta)</option>
+            </select>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

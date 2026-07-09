@@ -15,9 +15,13 @@ import { useWallStore, undo, redo } from "@/lib/store";
 import { loadState, saveState } from "@/lib/persist";
 import { exportGLTF, screenshotCanvas } from "@/lib/export";
 import { ExportManager } from "./ExportManager";
+import BudgetPanel from "./BudgetPanel";
+import { PlantView } from "./PlantView";
 
 export function EditorLayout() {
   const [wallMenuOpen, setWallMenuOpen] = useState(false);
+  const [budgetOpen, setBudgetOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"3d" | "2d">("3d");
   const selectWall = useWallStore((s) => s.selectWall);
   const selectObject = useWallStore((s) => s.selectObject);
   const selectedWallId = useWallStore((s) => s.selectedWallId);
@@ -132,6 +136,17 @@ export function EditorLayout() {
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
           </button>
+          <span className="w-px h-4 bg-slate-700/50 mx-1" />
+          {/* Budget */}
+          <button
+            onClick={() => setBudgetOpen(true)}
+            className="rounded-md p-1.5 text-slate-500 hover:bg-slate-800 hover:text-slate-300 transition"
+            title="Presupuesto"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </button>
           {/* Gizmo mode */}
           {(selectedObjectId || selectedWallId) && (
             <span className="w-px h-4 bg-slate-700/50 mx-1" />
@@ -188,43 +203,61 @@ export function EditorLayout() {
               <line x1="9" y1="12" x2="15" y2="12"/><line x1="12" y1="9" x2="12" y2="15"/>
             </svg>
           </button>
+          <span className="w-5 border-t border-slate-700/50" />
+          <button
+            onClick={() => setViewMode(viewMode === "3d" ? "2d" : "3d")}
+            className={`flex h-7 w-7 items-center justify-center rounded-md transition ${viewMode === "2d" ? "bg-blue-600/20 text-blue-400" : "text-slate-500 hover:bg-slate-800 hover:text-slate-300"}`}
+            title={viewMode === "3d" ? "Vista planta 2D" : "Vista 3D"}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              {viewMode === "3d" ? (
+                <><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>
+              ) : (
+                <><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>
+              )}
+            </svg>
+          </button>
         </div>
 
-        {/* 3D Canvas */}
+        {/* 3D Canvas / 2D Plant View */}
         <main className="flex-1 flex flex-col">
           <div className="flex-1 relative">
-            <ErrorBoundary
-              fallback={
-                <div className="flex h-full items-center justify-center bg-slate-950 text-slate-500">
-                  <div className="text-center">
-                    <p className="text-lg">⚠️</p>
-                    <p className="mt-2 text-sm">Error en la escena 3D</p>
-                    <button
-                      onClick={() => window.location.reload()}
-                      className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-xs text-white hover:bg-blue-500"
-                    >
-                      Recargar
-                    </button>
+            {viewMode === "3d" ? (
+              <ErrorBoundary
+                fallback={
+                  <div className="flex h-full items-center justify-center bg-slate-950 text-slate-500">
+                    <div className="text-center">
+                      <p className="text-lg">⚠️</p>
+                      <p className="mt-2 text-sm">Error en la escena 3D</p>
+                      <button
+                        onClick={() => window.location.reload()}
+                        className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-xs text-white hover:bg-blue-500"
+                      >
+                        Recargar
+                      </button>
+                    </div>
                   </div>
-                </div>
-              }
-            >
-              <Canvas
-                gl={{ antialias: true, preserveDrawingBuffer: true }}
-                dpr={[1, 1.5]}
-                camera={{ position: [8, 6, 8], fov: 45, near: 0.1, far: 100 }}
-                onPointerMissed={() => {
-                  selectWall(null);
-                  selectObject(null);
-                }}
+                }
               >
-                <Scene>
-                  <WallDrawMode />
-                  <FurnitureManager />
-                  <ExportManager />
-                </Scene>
-              </Canvas>
-            </ErrorBoundary>
+                <Canvas
+                  gl={{ antialias: true, preserveDrawingBuffer: true }}
+                  dpr={[1, 1.5]}
+                  camera={{ position: [8, 6, 8], fov: 45, near: 0.1, far: 100 }}
+                  onPointerMissed={() => {
+                    selectWall(null);
+                    selectObject(null);
+                  }}
+                >
+                  <Scene>
+                    <WallDrawMode />
+                    <FurnitureManager />
+                    <ExportManager />
+                  </Scene>
+                </Canvas>
+              </ErrorBoundary>
+            ) : (
+              <PlantView />
+            )}
           </div>
         </main>
 
@@ -240,6 +273,8 @@ export function EditorLayout() {
 
       {/* Wall Creation Modal */}
       {wallMenuOpen && <WallMenu onClose={() => setWallMenuOpen(false)} />}
+      {/* Budget Panel */}
+      {budgetOpen && <BudgetPanel onClose={() => setBudgetOpen(false)} />}
     </div>
   );
 }

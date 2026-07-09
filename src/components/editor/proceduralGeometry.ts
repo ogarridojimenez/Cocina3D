@@ -13,6 +13,9 @@ interface BuildOptions {
   lWidthZ?: number;   // Extensión L en eje +Z
   lWidth?: number;    // Legacy - se usa como lWidthZ si existe
   hasSink?: boolean;
+  swingSide?: "left" | "right"; // Lado de apertura para puertas en pared
+  shelves?: number;   // Nº baldas (armario-modular)
+  doorType?: "closed" | "glass" | "open"; // Tipo puerta (armario-modular)
 }
 
 export function buildGeometry(
@@ -931,6 +934,301 @@ export function buildGeometry(
       );
       lampBody3.position.y = H / 2;
       group.add(lampBody3);
+      break;
+    }
+
+    // ── Armario modular configurable ───────────────
+    case "armario-modular": {
+      const bodyMat = mat();
+      const amBody = new THREE.Mesh(new THREE.BoxGeometry(W, H * 0.9, D * 0.85), bodyMat);
+      amBody.position.y = H * 0.45;
+      amBody.position.z = -D * 0.05;
+      group.add(amBody);
+
+      // Baldas configurables
+      const shelfMat2 = new THREE.MeshStandardMaterial({ color: 0x6B5B3E });
+      const numShelves = opts.shelves ?? 2;
+      for (let i = 0; i < numShelves; i++) {
+        const shelf = new THREE.Mesh(new THREE.BoxGeometry(W * 0.8, 0.02, D * 0.7), shelfMat2);
+        shelf.position.set(0, H * 0.15 + i * (H * 0.6 / Math.max(numShelves, 1)), -D * 0.05);
+        group.add(shelf);
+      }
+
+      // Puerta según doorType
+      const dt = opts.doorType ?? "glass";
+      if (dt === "glass") {
+        const glassMat2 = new THREE.MeshStandardMaterial({
+          color: lightColor,
+          transparent: true,
+          opacity: 0.4,
+          roughness: 0.1,
+          metalness: 0.1,
+        });
+        const doorGl2 = new THREE.Mesh(new THREE.BoxGeometry(W * 0.85, H * 0.85, 0.03), glassMat2);
+        doorGroup = new THREE.Group();
+        doorGroup.position.set(W * 0.425, H * 0.45, D * 0.4);
+        doorGl2.position.set(-W * 0.425, 0, 0);
+        doorGroup.add(doorGl2);
+        group.add(doorGroup);
+      } else if (dt === "closed") {
+        const doorSol = new THREE.Mesh(new THREE.BoxGeometry(W * 0.85, H * 0.85, 0.03), mat(lightColor.getHexString()));
+        doorGroup = new THREE.Group();
+        doorGroup.position.set(W * 0.425, H * 0.45, D * 0.4);
+        doorSol.position.set(-W * 0.425, 0, 0);
+        doorGroup.add(doorSol);
+        group.add(doorGroup);
+      }
+      // "open" → sin puerta, solo baldas visibles
+      break;
+    }
+
+    // ── Columna fontanería ─────────────────────────
+    case "columna-fontaneria": {
+      const pipeMat = buildPBRMaterial(null, "#C0C0C0");
+      const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, H, 12), pipeMat);
+      pipe.position.y = H / 2;
+      group.add(pipe);
+      // segunda tubería
+      const pipe2 = pipe.clone();
+      pipe2.position.x = 0.05;
+      group.add(pipe2);
+      break;
+    }
+
+    // ── Tubería horizontal ─────────────────────────
+    case "tuberia-horizontal": {
+      const matTH = buildPBRMaterial(null, "#C0C0C0");
+      const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, W, 8), matTH);
+      tube.rotation.z = Math.PI / 2;
+      group.add(tube);
+      break;
+    }
+
+    // ── Sifón decorativo ──────────────────────────
+    case "sifon-decorativo": {
+      const matSif = buildPBRMaterial(null, "#B0B0B0");
+      const u1 = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.025, 8, 12, Math.PI), matSif);
+      u1.position.set(0, 0.1, 0);
+      u1.rotation.x = Math.PI;
+      group.add(u1);
+      const down = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.1, 8), matSif);
+      down.position.y = 0.05;
+      group.add(down);
+      break;
+    }
+
+    // ── Encimera L ─────────────────────────────────
+    case "countertop-l": {
+      const ctMat = mat();
+      // Main rectangle
+      const main = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), ctMat);
+      main.position.set(W / 2 - 0.1, H / 2, 0);
+      group.add(main);
+      // L extension (if lWidthX/lWidthZ provided via opts)
+      if ((opts.lWidthX ?? 0) > 0 || (opts.lWidthZ ?? 0) > 0) {
+        const lx = opts.lWidthX ?? 0.8;
+        const lz = opts.lWidthZ ?? 0.8;
+        const ext = new THREE.Mesh(new THREE.BoxGeometry(lx, H, lz), ctMat);
+        ext.position.set(W + lx / 2 - 0.1, H / 2, -D / 2 - lz / 2);
+        group.add(ext);
+      }
+      break;
+    }
+
+    // ── Puerta en pared (marco + hoja pivotante) ──
+    case "door": {
+      const frameThick = 0.06;
+      const frameDepth = 0.08;
+      const doorThick = 0.035;
+      const doorH = H;
+      const doorW = W;
+      const frameMat = mat(darkColor.getHexString());
+      const doorMat = mat(lightColor.getHexString());
+
+      // Marco: montante izquierdo
+      const leftStile = new THREE.Mesh(
+        new THREE.BoxGeometry(frameThick, doorH, frameDepth),
+        frameMat
+      );
+      leftStile.position.set(-doorW / 2 + frameThick / 2, doorH / 2, 0);
+      group.add(leftStile);
+
+      // Marco: montante derecho
+      const rightStile = new THREE.Mesh(
+        new THREE.BoxGeometry(frameThick, doorH, frameDepth),
+        frameMat
+      );
+      rightStile.position.set(doorW / 2 - frameThick / 2, doorH / 2, 0);
+      group.add(rightStile);
+
+      // Marco: travesaño superior
+      const topRail = new THREE.Mesh(
+        new THREE.BoxGeometry(doorW, frameThick, frameDepth),
+        frameMat
+      );
+      topRail.position.set(0, doorH - frameThick / 2, 0);
+      group.add(topRail);
+
+      // Marco: travesaño inferior
+      const bottomRail = new THREE.Mesh(
+        new THREE.BoxGeometry(doorW, frameThick, frameDepth),
+        frameMat
+      );
+      bottomRail.position.set(0, frameThick / 2, 0);
+      group.add(bottomRail);
+
+      // Hoja de la puerta (panel)
+      const panelW = doorW - frameThick * 2 - 0.01;
+      const panelH = doorH - frameThick * 2 - 0.01;
+      const doorLeaf = new THREE.Mesh(
+        new THREE.BoxGeometry(panelW, panelH, doorThick),
+        doorMat
+      );
+      // Panel decorativo (relieve central)
+      const panelDetail = new THREE.Mesh(
+        new THREE.BoxGeometry(panelW * 0.7, panelH * 0.7, doorThick * 0.3),
+        mat(mainColor.clone().multiplyScalar(0.85).getHexString())
+      );
+      panelDetail.position.z = doorThick / 2 + 0.001;
+
+      // Grupo pivote para animación de apertura
+      doorGroup = new THREE.Group();
+      // Pivot en el borde izquierdo o derecho según swingSide
+      // (por defecto usamos "left" = bisagra a la izquierda, apertura a la derecha)
+      const isLeftSwing = opts.swingSide !== "right";
+      const pivotX = isLeftSwing ? -doorW / 2 + frameThick + 0.005 : doorW / 2 - frameThick - 0.005;
+      doorGroup.position.set(pivotX, doorH / 2, 0);
+      // Hoja offset desde el pivote
+      const leafOffsetX = isLeftSwing ? panelW / 2 : -panelW / 2;
+      doorLeaf.position.set(leafOffsetX, 0, frameDepth / 2 + doorThick / 2);
+      panelDetail.position.x = leafOffsetX;
+      panelDetail.position.y = 0;
+      panelDetail.position.z = frameDepth / 2 + doorThick / 2 + doorThick * 0.3 / 2 + 0.001;
+      doorGroup.add(doorLeaf);
+      doorGroup.add(panelDetail);
+      group.add(doorGroup);
+
+      // Tirador (manilla)
+      const handleMat = solidMat(0x888888);
+      const handleBar = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.008, 0.008, 0.12, 8),
+        handleMat
+      );
+      handleBar.rotation.z = Math.PI / 2;
+      const handleX = isLeftSwing
+        ? pivotX + panelW / 2 - 0.06
+        : pivotX - panelW / 2 + 0.06;
+      handleBar.position.set(handleX, doorH * 0.5, frameDepth / 2 + doorThick + 0.005);
+      group.add(handleBar);
+
+      const handleKnob = new THREE.Mesh(
+        new THREE.SphereGeometry(0.012, 8, 8),
+        handleMat
+      );
+      handleKnob.position.set(handleX, doorH * 0.5, frameDepth / 2 + doorThick + 0.02);
+      group.add(handleKnob);
+      break;
+    }
+
+    // ── Ventana en pared (marco + cristal) ────────────
+    case "window": {
+      const frameThick = 0.05;
+      const frameDepth = 0.06;
+      const glassThick = 0.02;
+      const windowW = W;
+      const windowH = H;
+
+      // Frame material (darker than main color)
+      const frameMat = mat(darkColor.getHexString());
+      // Glass material (semi-transparent blueish)
+      const glassMat = new THREE.MeshPhysicalMaterial({
+        color: 0x87CEEB,
+        transparent: true,
+        opacity: 0.35,
+        metalness: 0.0,
+        roughness: 0.05,
+        envMapIntensity: 1.0,
+        side: THREE.DoubleSide,
+      });
+      // Glass frame border (slightly reflective)
+      const glassBorderMat = new THREE.MeshPhysicalMaterial({
+        color: 0xADD8E6,
+        transparent: true,
+        opacity: 0.5,
+        metalness: 0.1,
+        roughness: 0.1,
+        side: THREE.DoubleSide,
+      });
+
+      // Marco: montante izquierdo
+      const leftStile = new THREE.Mesh(
+        new THREE.BoxGeometry(frameThick, windowH, frameDepth),
+        frameMat
+      );
+      leftStile.position.set(-windowW / 2 + frameThick / 2, windowH / 2, 0);
+      group.add(leftStile);
+
+      // Marco: montante derecho
+      const rightStile = new THREE.Mesh(
+        new THREE.BoxGeometry(frameThick, windowH, frameDepth),
+        frameMat
+      );
+      rightStile.position.set(windowW / 2 - frameThick / 2, windowH / 2, 0);
+      group.add(rightStile);
+
+      // Marco: travesaño superior
+      const topRail = new THREE.Mesh(
+        new THREE.BoxGeometry(windowW, frameThick, frameDepth),
+        frameMat
+      );
+      topRail.position.set(0, windowH - frameThick / 2, 0);
+      group.add(topRail);
+
+      // Marco: travesaño inferior
+      const bottomRail = new THREE.Mesh(
+        new THREE.BoxGeometry(windowW, frameThick, frameDepth),
+        frameMat
+      );
+      bottomRail.position.set(0, frameThick / 2, 0);
+      group.add(bottomRail);
+
+      // Panel de vidrio principal (ocupa todo el hueco interior del marco)
+      const glassW = windowW - frameThick * 2 - 0.01;
+      const glassH = windowH - frameThick * 2 - 0.01;
+      const glass = new THREE.Mesh(
+        new THREE.BoxGeometry(glassW, glassH, glassThick),
+        glassMat
+      );
+      glass.position.set(0, windowH / 2, frameDepth / 2 + glassThick / 2);
+      group.add(glass);
+
+      // Segundo panel de vidrio (sutil separación para efecto doble acristalamiento)
+      const glass2 = new THREE.Mesh(
+        new THREE.BoxGeometry(glassW * 0.98, glassH * 0.98, glassThick * 0.5),
+        glassBorderMat
+      );
+      glass2.position.set(0, windowH / 2, frameDepth / 2 - glassThick * 0.3);
+      group.add(glass2);
+
+      // Cruz interior (parteluz) — montante vertical central
+      const mullionW = 0.03;
+      const mullionDepth = frameDepth * 0.8;
+      const mullionMat = frameMat;
+      const mullionVert = new THREE.Mesh(
+        new THREE.BoxGeometry(mullionW, glassH * 0.9, mullionDepth),
+        mullionMat
+      );
+      mullionVert.position.set(0, windowH / 2, frameDepth / 2 + glassThick / 2);
+      group.add(mullionVert);
+
+      // Cruz interior (parteluz) — travesaño horizontal central
+      const mullionHoriz = new THREE.Mesh(
+        new THREE.BoxGeometry(glassW * 0.9, mullionW, mullionDepth),
+        mullionMat
+      );
+      mullionHoriz.position.set(0, windowH / 2, frameDepth / 2 + glassThick / 2);
+      group.add(mullionHoriz);
+
       break;
     }
 

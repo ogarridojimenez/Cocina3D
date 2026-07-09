@@ -2,6 +2,7 @@ export type ObjectType =
   | "cabinet-base"
   | "cabinet-wall"
   | "cabinet-drawer"
+  | "armario-modular"
   | "shelf"
   | "open-shelf"
   | "vitrina"
@@ -33,7 +34,13 @@ export type ObjectType =
   | "lamp-colgante"
   | "lamp-techo"
   | "planta"
-  | "floor";
+  | "columna-fontaneria"
+  | "tuberia-horizontal"
+  | "sifon-decorativo"
+  | "countertop-l"
+  | "floor"
+  | "door"
+  | "window";
 
 export type Category = "Muebles" | "Electrodomésticos" | "Encimera" | "Accesorios" | "Campana" | "Mesetas" | "Pared" | "Suelo" | "Iluminación";
 export type AnimationType = "door" | "drawer" | "none";
@@ -91,6 +98,19 @@ export const CATALOG: CatalogItem[] = [
     defaultDepth: 0.5,
     defaultColor: "#A0522D",
     animationType: "drawer",
+    mountType: "floor",
+    mountHeight: 0,
+  },
+  {
+    id: "armario-modular",
+    name: "Armario modular configurable",
+    category: "Muebles",
+    icon: "🧩",
+    defaultWidth: 0.6,
+    defaultHeight: 0.85,
+    defaultDepth: 0.5,
+    defaultColor: "#8B7355",
+    animationType: "door",
     mountType: "floor",
     mountHeight: 0,
   },
@@ -361,6 +381,19 @@ export const CATALOG: CatalogItem[] = [
     mountHeight: 0.85,
   },
   {
+    id: "countertop-l",
+    name: "Encimera L",
+    category: "Encimera",
+    icon: "🔳",
+    defaultWidth: 2.0,
+    defaultHeight: 0.04,
+    defaultDepth: 0.6,
+    defaultColor: "#B8A88A",
+    animationType: "none",
+    mountType: "floor",
+    mountHeight: 0.85,
+  },
+  {
     id: "sink",
     name: "Fregadero",
     category: "Encimera",
@@ -482,6 +515,32 @@ export const CATALOG: CatalogItem[] = [
     mountType: "wall",
     mountHeight: 1.6,
   },
+  {
+    id: "door",
+    name: "Puerta",
+    category: "Pared",
+    icon: "🚪",
+    defaultWidth: 0.9,
+    defaultHeight: 2.1,
+    defaultDepth: 0.06,
+    defaultColor: "#8B4513",
+    animationType: "door",
+    mountType: "wall",
+    mountHeight: 0,
+  },
+  {
+    id: "window",
+    name: "Ventana",
+    category: "Pared",
+    icon: "🪟",
+    defaultWidth: 1.0,
+    defaultHeight: 1.2,
+    defaultDepth: 0.06,
+    defaultColor: "#87CEEB",
+    animationType: "none",
+    mountType: "wall",
+    mountHeight: 0.9,
+  },
 
   // ── Iluminación ──────────────────────────────────
   {
@@ -509,6 +568,47 @@ export const CATALOG: CatalogItem[] = [
     animationType: "none",
     mountType: "floor",
     mountHeight: 2.5,
+  },
+
+  // ── Fontanería ────────────────────────────────────
+  {
+    id: "columna-fontaneria",
+    name: "Columna fontanería",
+    category: "Muebles",
+    icon: "🔧",
+    defaultWidth: 0.15,
+    defaultHeight: 2.5,
+    defaultDepth: 0.15,
+    defaultColor: "#C0C0C0",
+    animationType: "none",
+    mountType: "floor",
+    mountHeight: 0,
+  },
+  {
+    id: "tuberia-horizontal",
+    name: "Tubería horizontal",
+    category: "Muebles",
+    icon: "📏",
+    defaultWidth: 0.8,
+    defaultHeight: 0.05,
+    defaultDepth: 0.05,
+    defaultColor: "#C0C0C0",
+    animationType: "none",
+    mountType: "wall",
+    mountHeight: 0.4,
+  },
+  {
+    id: "sifon-decorativo",
+    name: "Sifón decorativo",
+    category: "Muebles",
+    icon: "🔩",
+    defaultWidth: 0.2,
+    defaultHeight: 0.2,
+    defaultDepth: 0.15,
+    defaultColor: "#B0B0B0",
+    animationType: "none",
+    mountType: "counter",
+    mountHeight: 0,
   },
 
   // ── Suelo ───────────────────────────────────────

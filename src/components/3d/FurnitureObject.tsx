@@ -43,8 +43,8 @@ export function FurnitureMesh({ object }: Props) {
   const { group, doorGroup } = useMemo(
     () => object.type === "floor"
       ? { group: new THREE.Group(), doorGroup: null }
-      : buildGeometry(object.type, object.color, object.width, object.height, object.depth, object.materialId, { lWidthX: object.lWidthX, lWidthZ: object.lWidthZ, hasSink: object.hasSink }),
-    [object.type, object.color, object.width, object.height, object.depth, object.materialId, object.lWidthX, object.lWidthZ, object.hasSink]
+      : buildGeometry(object.type, object.color, object.width, object.height, object.depth, object.materialId, { lWidthX: object.lWidthX, lWidthZ: object.lWidthZ, hasSink: object.hasSink, shelves: object.shelves, doorType: object.doorType, swingSide: object.swingSide }),
+    [object.type, object.color, object.width, object.height, object.depth, object.materialId, object.lWidthX, object.lWidthZ, object.hasSink, object.shelves, object.doorType, object.swingSide]
   );
 
   // Floor material (CC0 texture or procedural)
