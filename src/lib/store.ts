@@ -188,10 +188,11 @@ export const useWallStore = create<WallStore>()(
         const cat = getCatalogItem(type);
         const isWallObject = cat.mountType === "wall";
         const isCounter = cat.mountType === "counter";
+        const isFloor = cat.mountType === "floor";
         const obj: FurnitureObject = {
           id: nextObjId(),
           type,
-          position: position ?? (isWallObject ? { x: 0, z: 0 } : isCounter ? { x: 0, z: 2 } : { x: 0, z: 2 }),
+          position: position ?? (isWallObject ? { x: 0, z: 0 } : isCounter ? { x: 0, z: 2 } : isFloor ? { x: 0, z: 0 } : { x: 0, z: 2 }),
           posY: isWallObject ? cat.mountHeight : isCounter ? 0.85 : 0,
           rotation: 0,
           scale: 1,
