@@ -16,6 +16,8 @@ export function CatalogPanel() {
     Encimera: false,
     Accesorios: false,
     Campana: false,
+    Mesetas: false,
+    Pared: false,
   });
 
   const toggle = (cat: Category) =>
@@ -27,6 +29,8 @@ export function CatalogPanel() {
     Encimera: "⬜",
     Accesorios: "🔧",
     Campana: "💨",
+    Mesetas: "🔲",
+    Pared: "📺",
   };
 
   return (

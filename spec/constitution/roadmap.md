@@ -25,6 +25,8 @@
 | 009 | **Iluminación Avanzada** — HemisphereLight, PCFSoft, PointLights, SpotLights, calidad sombras | `Lighting.tsx`, toggleLight UI |
 | 010 | **Materiales PBR** — 10 materiales procedurales con albedo + normal + roughness + metalness, selector por objeto | `materials.ts`, `lib/materials.ts`, selector en ObjectProperties |
 
+11. **011 — Catálogo Meseta + TV** — Meseta modular con puertas, extensión en L, fregadero integrado; TV pared con marco negro y soporte ✅
+
 ## Siguiente 🔜
 
 | # | Feature | Dependencias |

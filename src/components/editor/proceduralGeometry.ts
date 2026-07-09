@@ -7,13 +7,20 @@ interface BuildResult {
   doorGroup: THREE.Group | null;
 }
 
+interface BuildOptions {
+  materialId?: string | null;
+  lWidth?: number;
+  hasSink?: boolean;
+}
+
 export function buildGeometry(
   type: ObjectType,
   color: string,
   width: number,
   height: number,
   depth: number,
-  materialId: string | null = null
+  materialId: string | null = null,
+  opts: BuildOptions = {}
 ): BuildResult {
   const cat = getCatalogItem(type);
   const mainColor = new THREE.Color(color);
@@ -413,6 +420,122 @@ export function buildGeometry(
       );
       lip.position.y = H - 0.02;
       group.add(lip);
+      break;
+    }
+
+    // ── Counter (Meseta) ─────────────────────────
+    case "counter": {
+      const cMat = mat(lightColor.getHexString());
+      const lW = (opts?.lWidth ?? 0);
+      const sink = opts?.hasSink ?? false;
+
+      // Base cabinets with doors
+      const cabH = H * 0.8;
+      const cabD = D;
+      const cabMat = mat();
+
+      // Main linear section
+      const numCabs = Math.max(1, Math.floor(W / 0.6));
+      const cabWidth = W / numCabs;
+      for (let i = 0; i < numCabs; i++) {
+        const body = new THREE.Mesh(
+          new THREE.BoxGeometry(cabWidth * 0.95, cabH * 0.9, cabD * 0.85),
+          cabMat
+        );
+        body.position.set(-W / 2 + cabWidth * i + cabWidth / 2, cabH * 0.45, -cabD * 0.05);
+        group.add(body);
+
+        const door = new THREE.Mesh(
+          new THREE.BoxGeometry(cabWidth * 0.85, cabH * 0.85, 0.03),
+          mat(lightColor.getHexString())
+        );
+        const dg = new THREE.Group();
+        dg.position.set(-W / 2 + cabWidth * i + cabWidth * 0.425, cabH * 0.45, cabD * 0.4);
+        door.position.set(-cabWidth * 0.425, 0, 0);
+        dg.add(door);
+        group.add(dg);
+        if (doorGroup === null && i === 0) {
+          doorGroup = dg;
+        }
+      }
+
+      // Countertop slab
+      const slab = new THREE.Mesh(
+        new THREE.BoxGeometry(W, 0.04, D + 0.05),
+        mat(lightColor.getHexString())
+      );
+      slab.position.set(0, cabH, 0);
+      group.add(slab);
+
+      // L extension (perpendicular, protrudes forward in +Z)
+      if (lW > 0) {
+        const lDepth = D; // L-leg width = counter depth
+        const lCount = Math.max(1, Math.floor(D / 0.6));
+        const lSeg = D / lCount;
+        for (let i = 0; i < lCount; i++) {
+          const body = new THREE.Mesh(
+            new THREE.BoxGeometry(lDepth * 0.85, cabH * 0.9, (lW / lCount) * 0.85),
+            cabMat
+          );
+          // Position at right end of main counter, protruding forward
+          body.position.set(
+            W / 2 - lDepth / 2,
+            cabH * 0.45,
+            D / 2 + (lW / lCount) * i + (lW / lCount) / 2
+          );
+          group.add(body);
+        }
+        // L countertop slab
+        const lTop = new THREE.Mesh(
+          new THREE.BoxGeometry(lDepth * 0.95, 0.04, lW + 0.05),
+          mat(lightColor.getHexString())
+        );
+        lTop.position.set(W / 2 - lDepth / 2, cabH, D / 2 + lW / 2);
+        group.add(lTop);
+      }
+
+      // Fregadero integrado
+      if (sink) {
+        const sinkBody = new THREE.Mesh(
+          new THREE.BoxGeometry(0.5, 0.15, 0.4),
+          new THREE.MeshStandardMaterial({ color: 0x999999, metalness: 0.4, roughness: 0.3 })
+        );
+        sinkBody.position.set(0, cabH + 0.02, 0);
+        group.add(sinkBody);
+        const basin = new THREE.Mesh(
+          new THREE.BoxGeometry(0.35, 0.08, 0.25),
+          new THREE.MeshStandardMaterial({ color: 0x444444, metalness: 0.6, roughness: 0.2 })
+        );
+        basin.position.set(0, cabH - 0.02, 0);
+        group.add(basin);
+        const tap = new THREE.Mesh(
+          new THREE.BoxGeometry(0.02, 0.2, 0.02),
+          new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.8, roughness: 0.2 })
+        );
+        tap.position.set(0, cabH + 0.12, 0.1);
+        group.add(tap);
+      }
+      break;
+    }
+
+    // ── TV ────────────────────────────────────────
+    case "tv": {
+      const tvMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.1, roughness: 0.8 });
+      const screen = new THREE.Mesh(
+        new THREE.BoxGeometry(W * 0.95, H * 0.95, 0.02),
+        new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x000020, emissiveIntensity: 0.3 })
+      );
+      screen.position.z = 0.02;
+      group.add(screen);
+      const frame = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), tvMat);
+      frame.position.z = 0;
+      group.add(frame);
+      const mount = new THREE.Mesh(
+        new THREE.BoxGeometry(0.05, 0.2, 0.05),
+        new THREE.MeshStandardMaterial({ color: 0x666666 })
+      );
+      mount.position.z = -D / 2 - 0.025;
+      group.add(mount);
       break;
     }
   }

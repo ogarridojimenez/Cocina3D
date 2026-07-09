@@ -15,9 +15,11 @@ export type ObjectType =
   | "coffee-machine"
   | "toaster"
   | "dish-rack"
-  | "island";
+  | "island"
+  | "counter"
+  | "tv";
 
-export type Category = "Muebles" | "Electrodomésticos" | "Encimera" | "Accesorios" | "Campana";
+export type Category = "Muebles" | "Electrodomésticos" | "Encimera" | "Accesorios" | "Campana" | "Mesetas" | "Pared";
 export type AnimationType = "door" | "drawer" | "none";
 export type MountType = "floor" | "wall" | "counter";
 
@@ -36,6 +38,7 @@ export interface CatalogItem {
 }
 
 export const CATALOG: CatalogItem[] = [
+  // ── Muebles ───────────────────────────────────────
   {
     id: "cabinet-base",
     name: "Armario base",
@@ -102,18 +105,20 @@ export const CATALOG: CatalogItem[] = [
     mountHeight: 0,
   },
   {
-    id: "chair",
-    name: "Silla",
-    category: "Accesorios",
-    icon: "🪑",
-    defaultWidth: 0.45,
+    id: "island",
+    name: "Isla cocina",
+    category: "Muebles",
+    icon: "🏝️",
+    defaultWidth: 1.8,
     defaultHeight: 0.85,
-    defaultDepth: 0.45,
-    defaultColor: "#4A4A4A",
+    defaultDepth: 0.9,
+    defaultColor: "#A0926B",
     animationType: "none",
     mountType: "floor",
     mountHeight: 0,
   },
+
+  // ── Electrodomésticos ─────────────────────────────
   {
     id: "fridge",
     name: "Nevera",
@@ -154,6 +159,34 @@ export const CATALOG: CatalogItem[] = [
     mountHeight: 0,
   },
   {
+    id: "dishwasher",
+    name: "Lavavajillas",
+    category: "Electrodomésticos",
+    icon: "🧼",
+    defaultWidth: 0.6,
+    defaultHeight: 0.85,
+    defaultDepth: 0.6,
+    defaultColor: "#E8E8E8",
+    animationType: "door",
+    mountType: "floor",
+    mountHeight: 0,
+  },
+  {
+    id: "tv",
+    name: "TV Pared",
+    category: "Pared",
+    icon: "📺",
+    defaultWidth: 1.2,
+    defaultHeight: 0.7,
+    defaultDepth: 0.05,
+    defaultColor: "#111111",
+    animationType: "none",
+    mountType: "wall",
+    mountHeight: 1.5,
+  },
+
+  // ── Encimera ──────────────────────────────────────
+  {
     id: "countertop",
     name: "Encimera",
     category: "Encimera",
@@ -178,32 +211,6 @@ export const CATALOG: CatalogItem[] = [
     animationType: "none",
     mountType: "counter",
     mountHeight: 0,
-  },
-  {
-    id: "dishwasher",
-    name: "Lavavajillas",
-    category: "Electrodomésticos",
-    icon: "🧼",
-    defaultWidth: 0.6,
-    defaultHeight: 0.85,
-    defaultDepth: 0.6,
-    defaultColor: "#E8E8E8",
-    animationType: "door",
-    mountType: "floor",
-    mountHeight: 0,
-  },
-  {
-    id: "range-hood",
-    name: "Campana extractora",
-    category: "Campana",
-    icon: "💨",
-    defaultWidth: 0.8,
-    defaultHeight: 0.15,
-    defaultDepth: 0.5,
-    defaultColor: "#C0C0C0",
-    animationType: "none",
-    mountType: "wall",
-    mountHeight: 2.2,
   },
   {
     id: "coffee-machine",
@@ -231,6 +238,36 @@ export const CATALOG: CatalogItem[] = [
     mountType: "counter",
     mountHeight: 0,
   },
+
+  // ── Campana ───────────────────────────────────────
+  {
+    id: "range-hood",
+    name: "Campana extractora",
+    category: "Campana",
+    icon: "💨",
+    defaultWidth: 0.8,
+    defaultHeight: 0.15,
+    defaultDepth: 0.5,
+    defaultColor: "#C0C0C0",
+    animationType: "none",
+    mountType: "wall",
+    mountHeight: 2.2,
+  },
+
+  // ── Accesorios ────────────────────────────────────
+  {
+    id: "chair",
+    name: "Silla",
+    category: "Accesorios",
+    icon: "🪑",
+    defaultWidth: 0.45,
+    defaultHeight: 0.85,
+    defaultDepth: 0.45,
+    defaultColor: "#4A4A4A",
+    animationType: "none",
+    mountType: "floor",
+    mountHeight: 0,
+  },
   {
     id: "dish-rack",
     name: "Platero",
@@ -244,16 +281,18 @@ export const CATALOG: CatalogItem[] = [
     mountType: "counter",
     mountHeight: 0,
   },
+
+  // ── Mesetas (nuevo sistema) ───────────────────────
   {
-    id: "island",
-    name: "Isla cocina",
-    category: "Muebles",
-    icon: "🏝️",
-    defaultWidth: 1.8,
+    id: "counter",
+    name: "Meseta",
+    category: "Mesetas",
+    icon: "🔲",
+    defaultWidth: 1.4,
     defaultHeight: 0.85,
-    defaultDepth: 0.9,
-    defaultColor: "#A0926B",
-    animationType: "none",
+    defaultDepth: 0.6,
+    defaultColor: "#B8A88A",
+    animationType: "door",
     mountType: "floor",
     mountHeight: 0,
   },
@@ -269,6 +308,8 @@ export const CATEGORIES: Category[] = [
   "Encimera",
   "Campana",
   "Accesorios",
+  "Mesetas",
+  "Pared",
 ];
 
 export function getItemsByCategory(category: Category): CatalogItem[] {

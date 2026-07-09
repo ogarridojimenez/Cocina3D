@@ -41,6 +41,9 @@ export interface FurnitureObject {
   width: number;
   height: number;
   depth: number;
+  // Counter (meseta) specific
+  lWidth: number;   // 0 = lineal, >0 = L-shape
+  hasSink: boolean; // fregadero integrado
 }
 
 // ── Scene store (original) ─────────────────────────
@@ -115,6 +118,7 @@ interface WallStore {
   setGizmoMode: (mode: "translate" | "rotate") => void;
   toggleLight: (id: string) => void;
   setMaterial: (id: string, materialId: string | null) => void;
+  setCounterProps: (id: string, props: { lWidth?: number; hasSink?: boolean }) => void;
   shadowQuality: number;
   setShadowQuality: (size: number) => void;
   clearScene: () => void;
@@ -190,6 +194,8 @@ export const useWallStore = create<WallStore>()(
           animated: false,
           lightOn: false,
           materialId: null,
+          lWidth: 0,
+          hasSink: false,
           color: color ?? cat.defaultColor,
           width: cat.defaultWidth,
           height: cat.defaultHeight,
@@ -243,6 +249,15 @@ export const useWallStore = create<WallStore>()(
         set((s) => ({
           objects: s.objects.map((o) =>
             o.id === id ? { ...o, materialId } : o
+          ),
+        })),
+
+      setCounterProps: (id, props) =>
+        set((s) => ({
+          objects: s.objects.map((o) =>
+            o.id === id
+              ? { ...o, ...(props.lWidth !== undefined ? { lWidth: props.lWidth } : {}), ...(props.hasSink !== undefined ? { hasSink: props.hasSink } : {}) }
+              : o
           ),
         })),
 

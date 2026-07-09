@@ -11,6 +11,7 @@ export function ObjectProperties() {
   const toggleAnimation = useWallStore((s) => s.toggleAnimation);
   const toggleLight = useWallStore((s) => s.toggleLight);
   const setMaterial = useWallStore((s) => s.setMaterial);
+  const setCounterProps = useWallStore((s) => s.setCounterProps);
   const shadowQuality = useWallStore((s) => s.shadowQuality);
   const setShadowQuality = useWallStore((s) => s.setShadowQuality);
 
@@ -128,6 +129,38 @@ export function ObjectProperties() {
           </Field>
         </div>
       </div>
+
+      {/* Counter config (solo para Mesetas) */}
+      {obj.type === "counter" && (
+        <div className="border-b border-slate-800 px-4 py-3">
+          <h3 className="mb-2.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+            <span>🔲</span> CONFIG. MESETA
+          </h3>
+          <div className="space-y-2">
+            <Field label="Ancho L" unit="m">
+              <input
+                type="number"
+                min={0}
+                max={5}
+                step={0.1}
+                value={obj.lWidth}
+                onChange={(e) => setCounterProps(obj.id, { lWidth: Number(e.target.value) })}
+                className="w-full rounded-md border border-slate-700 bg-slate-800/60 px-2.5 py-1.5 text-sm text-slate-200 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20"
+                placeholder="0 = lineal"
+              />
+            </Field>
+            <label className="flex items-center gap-2 text-[11px] text-slate-400 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={obj.hasSink ?? false}
+                onChange={(e) => setCounterProps(obj.id, { hasSink: e.target.checked })}
+                className="rounded border-slate-600 bg-slate-800 text-blue-500"
+              />
+              Fregadero integrado
+            </label>
+          </div>
+        </div>
+      )}
 
       {/* Color */}
       <div className="border-b border-slate-800 px-4 py-3">

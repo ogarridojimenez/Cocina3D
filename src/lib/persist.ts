@@ -50,6 +50,8 @@ export function loadState() {
             depth: o.depth ?? 0.6,
             posY: o.posY ?? 0,
             materialId: o.materialId ?? null,
+            lWidth: o.lWidth ?? 0,
+            hasSink: o.hasSink ?? false,
           });
         }
       });
