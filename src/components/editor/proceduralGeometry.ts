@@ -566,6 +566,375 @@ export function buildGeometry(
       group.add(mount);
       break;
     }
+
+    // ── Open Shelf ──────────────────────────────────
+    case "open-shelf": {
+      const osMat = mat();
+      const shelfMesh = new THREE.Mesh(new THREE.BoxGeometry(W, 0.03, D), osMat);
+      shelfMesh.position.y = H;
+      group.add(shelfMesh);
+      const brackets = [
+        [-W / 2 + 0.02, H, -D / 2 + 0.03],
+        [W / 2 - 0.02, H, -D / 2 + 0.03],
+      ];
+      for (const p of brackets) {
+        const b = new THREE.Mesh(
+          new THREE.BoxGeometry(0.015, 0.15, 0.015),
+          osMat
+        );
+        b.position.set(p[0], p[1] - 0.075, p[2]);
+        group.add(b);
+      }
+      break;
+    }
+
+    // ── Vitrina ────────────────────────────────────
+    case "vitrina": {
+      const vitMat = mat();
+      const vitBody = new THREE.Mesh(
+        new THREE.BoxGeometry(W, H * 0.9, D * 0.85),
+        vitMat
+      );
+      vitBody.position.set(0, H * 0.45, -D * 0.05);
+      group.add(vitBody);
+      // Glass door
+      const glassMat = new THREE.MeshPhysicalMaterial({
+        color: 0xaaaaaa,
+        transparent: true,
+        opacity: 0.3,
+        roughness: 0.1,
+        metalness: 0.0,
+      });
+      const glassDoor = new THREE.Mesh(
+        new THREE.BoxGeometry(W * 0.85, H * 0.85, 0.015),
+        glassMat
+      );
+      const gd = new THREE.Group();
+      gd.position.set(W * 0.425, H * 0.45, D * 0.4);
+      glassDoor.position.set(-W * 0.425, 0, 0);
+      gd.add(glassDoor);
+      doorGroup = gd;
+      group.add(gd);
+      // Frame border
+      const frameMat = mat(lightColor.getHexString());
+      const frameBorder = new THREE.Mesh(
+        new THREE.BoxGeometry(W * 0.87, H * 0.02, 0.018),
+        frameMat
+      );
+      frameBorder.position.set(0, H * 0.87, D * 0.4);
+      group.add(frameBorder);
+      break;
+    }
+
+    // ── Columna despensa ──────────────────────────
+    case "columna-despensa": {
+      const cdMat = mat();
+      const cdBody = new THREE.Mesh(
+        new THREE.BoxGeometry(W, H * 0.95, D * 0.9),
+        cdMat
+      );
+      cdBody.position.set(0, H * 0.475, -D * 0.03);
+      group.add(cdBody);
+      const cdDoor = new THREE.Mesh(
+        new THREE.BoxGeometry(W * 0.9, H * 0.92, 0.03),
+        mat(lightColor.getHexString())
+      );
+      const cdd = new THREE.Group();
+      cdd.position.set(W * 0.45, H * 0.475, D * 0.43);
+      cdDoor.position.set(-W * 0.45, 0, 0);
+      cdd.add(cdDoor);
+      doorGroup = cdd;
+      group.add(cdd);
+      break;
+    }
+
+    // ── Freezer ────────────────────────────────────
+    case "freezer": {
+      const fzMat = mat();
+      const fzBody = new THREE.Mesh(
+        new THREE.BoxGeometry(W, H * 0.95, D * 0.9),
+        fzMat
+      );
+      fzBody.position.set(0, H * 0.475, -D * 0.03);
+      group.add(fzBody);
+      const fzDoor = new THREE.Mesh(
+        new THREE.BoxGeometry(W * 0.9, H * 0.9, 0.04),
+        mat(lightColor.getHexString())
+      );
+      const fzd = new THREE.Group();
+      fzd.position.set(W * 0.45, H * 0.475, D * 0.43);
+      fzDoor.position.set(-W * 0.45, 0, 0);
+      fzd.add(fzDoor);
+      doorGroup = fzd;
+      group.add(fzd);
+      break;
+    }
+
+    // ── Washing machine ─────────────────────────────
+    case "washing-machine": {
+      const wMat = mat();
+      const wBody = new THREE.Mesh(
+        new THREE.BoxGeometry(W, H * 0.9, D * 0.9),
+        wMat
+      );
+      wBody.position.set(0, H * 0.45, -D * 0.03);
+      group.add(wBody);
+      const wDoor = new THREE.Mesh(
+        new THREE.CylinderGeometry(D * 0.25, D * 0.25, 0.03, 16),
+        new THREE.MeshPhysicalMaterial({ color: 0xcccccc, transparent: true, opacity: 0.5 })
+      );
+      wDoor.rotation.x = Math.PI / 2;
+      wDoor.position.set(0, H * 0.45, D * 0.45);
+      group.add(wDoor);
+      const dial = new THREE.Mesh(
+        new THREE.CircleGeometry(0.02, 12),
+        solidMat(0x666666)
+      );
+      dial.position.set(W * 0.2, H * 0.3, D * 0.44);
+      group.add(dial);
+      break;
+    }
+
+    // ── Placa ──────────────────────────────────────
+    case "placa": {
+      const pMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.3, roughness: 0.5 });
+      const placa = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), pMat);
+      placa.position.y = H / 2;
+      group.add(placa);
+      // 4 burner circles
+      const burnerMat = new THREE.MeshStandardMaterial({ color: 0x333333, emissive: 0x111111, emissiveIntensity: 0.5 });
+      const positions = [[-0.15, 0.012, -0.1], [0.15, 0.012, -0.1], [-0.1, 0.012, 0.12], [0.1, 0.012, 0.12]];
+      for (const p of positions) {
+        const burner = new THREE.Mesh(
+          new THREE.CircleGeometry(0.05, 12),
+          burnerMat
+        );
+        burner.rotation.x = -Math.PI / 2;
+        burner.position.set(p[0], p[1], p[2]);
+        group.add(burner);
+      }
+      break;
+    }
+
+    // ── Robot Cocina ─────────────────────────────
+    case "robot-cocina": {
+      const rcMat = mat();
+      const rcBase = new THREE.Mesh(new THREE.BoxGeometry(W, H * 0.4, D), rcMat);
+      rcBase.position.y = H * 0.2;
+      group.add(rcBase);
+      const rcGlass = new THREE.Mesh(
+        new THREE.BoxGeometry(W * 0.7, H * 0.55, D * 0.7),
+        new THREE.MeshPhysicalMaterial({ color: 0xffffff, transparent: true, opacity: 0.6, roughness: 0.1 })
+      );
+      rcGlass.position.y = H * 0.65;
+      group.add(rcGlass);
+      const lid = new THREE.Mesh(
+        new THREE.BoxGeometry(W * 0.65, 0.02, D * 0.65),
+        solidMat(0x333333)
+      );
+      lid.position.y = H * 0.9;
+      group.add(lid);
+      break;
+    }
+
+    // ── Warm Drawer ────────────────────────────────
+    case "warm-drawer": {
+      const wdMat = mat();
+      const wdBody = new THREE.Mesh(
+        new THREE.BoxGeometry(W, H * 0.9, D * 0.85),
+        wdMat
+      );
+      wdBody.position.set(0, H * 0.45, -D * 0.05);
+      group.add(wdBody);
+      const wdFront = new THREE.Mesh(
+        new THREE.BoxGeometry(W * 0.85, H * 0.85, 0.02),
+        mat(lightColor.getHexString())
+      );
+      const wdG = new THREE.Group();
+      wdG.position.set(0, H * 0.45, D * 0.42);
+      wdFront.position.set(0, 0, 0);
+      wdG.add(wdFront);
+      doorGroup = wdG;
+      group.add(wdG);
+      const wdHandle = new THREE.Mesh(
+        new THREE.BoxGeometry(W * 0.15, 0.015, 0.015),
+        solidMat(0x888888)
+      );
+      wdHandle.position.set(0, H * 0.45, D * 0.43);
+      group.add(wdHandle);
+      break;
+    }
+
+    // ── Range Hood Built-in ──────────────────────
+    case "range-hood-builtin": {
+      const rhbMat = new THREE.MeshStandardMaterial({
+        color: mainColor,
+        metalness: 0.5,
+        roughness: 0.2,
+      });
+      const rhbBody = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), rhbMat);
+      rhbBody.position.y = H / 2;
+      group.add(rhbBody);
+      break;
+    }
+
+    // ── Mesa Comedor ────────────────────────────
+    case "mesa-comedor": {
+      const mcMat = mat();
+      const top = new THREE.Mesh(new THREE.BoxGeometry(W, 0.04, D), mcMat);
+      top.position.y = H;
+      group.add(top);
+      const legPos = [
+        [-W / 2 + 0.04, 0.02, -D / 2 + 0.04],
+        [W / 2 - 0.04, 0.02, -D / 2 + 0.04],
+        [-W / 2 + 0.04, 0.02, D / 2 - 0.04],
+        [W / 2 - 0.04, 0.02, D / 2 - 0.04],
+      ];
+      const mLeg = new THREE.CylinderGeometry(0.025, 0.025, H, 8);
+      for (const p of legPos) {
+        const leg = new THREE.Mesh(mLeg, mcMat);
+        leg.position.set(p[0], H - 0.04 + p[1], p[2]);
+        group.add(leg);
+      }
+      break;
+    }
+
+    // ── Taburete ────────────────────────────────
+    case "taburete": {
+      const tMat = mat();
+      const seat = new THREE.Mesh(
+        new THREE.CylinderGeometry(W * 0.4, W * 0.45, 0.04, 12),
+        tMat
+      );
+      seat.position.y = H;
+      group.add(seat);
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(W * 0.15, W * 0.18, 8),
+        materialId ? mat() : new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.5 })
+      );
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.y = H * 0.15;
+      group.add(ring);
+      for (let i = 0; i < 4; i++) {
+        const angle = (i * Math.PI) / 2;
+        const leg = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.015, 0.015, H * 0.8, 6),
+          tMat
+        );
+        leg.position.set(
+          Math.cos(angle) * W * 0.25,
+          H * 0.15,
+          Math.sin(angle) * W * 0.25
+        );
+        group.add(leg);
+      }
+      break;
+    }
+
+    // ── Planta decorativa ────────────────────────
+    case "planta": {
+      const potMat = materialId ? mat() : new THREE.MeshStandardMaterial({ color: 0x8B4513, roughness: 0.8 });
+      const pot = new THREE.Mesh(
+        new THREE.CylinderGeometry(W * 0.3, W * 0.4, H * 0.3, 8),
+        potMat
+      );
+      pot.position.y = H * 0.15;
+      group.add(pot);
+      const stemMat = new THREE.MeshStandardMaterial({ color: 0x2E7D32 });
+      const stem = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.015, 0.01, H * 0.5, 6),
+        stemMat
+      );
+      stem.position.y = H * 0.4;
+      group.add(stem);
+      const leafMat = new THREE.MeshStandardMaterial({ color: 0x4CAF50 });
+      const leaf = new THREE.Mesh(
+        new THREE.SphereGeometry(W * 0.2, 6, 6),
+        leafMat
+      );
+      leaf.position.set(0, H * 0.68, 0);
+      leaf.scale.y = 1.3;
+      group.add(leaf);
+      const leaf2 = leaf.clone();
+      leaf2.position.set(W * 0.15, H * 0.6, 0.1);
+      leaf2.scale.set(0.8, 0.9, 0.8);
+      group.add(leaf2);
+      break;
+    }
+
+    // ── Cuadro pared ────────────────────────────
+    case "cuadro": {
+      const frameMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+      const canvasMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.6,
+      });
+      const canvas2 = new THREE.Mesh(
+        new THREE.PlaneGeometry(W * 0.85, H * 0.85),
+        canvasMat
+      );
+      canvas2.position.z = 0.005;
+      group.add(canvas2);
+      const frame2 = new THREE.Mesh(
+        new THREE.BoxGeometry(W, H, D),
+        frameMat
+      );
+      group.add(frame2);
+      // Art
+      const artMat = new THREE.MeshStandardMaterial({ color: 0x4A90D9 });
+      const art = new THREE.Mesh(
+        new THREE.CircleGeometry(W * 0.25, 16),
+        artMat
+      );
+      art.position.z = 0.012;
+      group.add(art);
+      break;
+    }
+
+    // ── Lámpara colgante ────────────────────────
+    case "lamp-colgante": {
+      const lampMat2 = new THREE.MeshStandardMaterial({
+        color: mainColor,
+        metalness: 0.6,
+        roughness: 0.2,
+        emissive: new THREE.Color(0xFFD700),
+        emissiveIntensity: 0.1,
+      });
+      const lampBody2 = new THREE.Mesh(
+        new THREE.ConeGeometry(W * 0.4, H, 12),
+        lampMat2
+      );
+      lampBody2.position.y = H / 2;
+      group.add(lampBody2);
+      const cableMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+      const cable = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.008, 0.008, 0.5, 4),
+        cableMat
+      );
+      cable.position.y = H + 0.25;
+      group.add(cable);
+      break;
+    }
+
+    // ── Lámpara techo ──────────────────────────────
+    case "lamp-techo": {
+      const lampMat3 = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.5,
+        metalness: 0.2,
+        emissive: new THREE.Color(0xffffff),
+        emissiveIntensity: 0.05,
+      });
+      const lampBody3 = new THREE.Mesh(
+        new THREE.CylinderGeometry(W * 0.4, W * 0.5, H, 12),
+        lampMat3
+      );
+      lampBody3.position.y = H / 2;
+      group.add(lampBody3);
+      break;
+    }
+
+    // ── End switch (original floor default) ──────
   }
 
   return { group, doorGroup };
