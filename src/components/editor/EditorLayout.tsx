@@ -9,6 +9,7 @@ import { WallMenu } from "@/components/ui/WallMenu";
 import { WallProperties } from "@/components/editor/WallProperties";
 import { CatalogPanel } from "@/components/editor/CatalogPanel";
 import { FurnitureManager } from "@/components/editor/FurnitureManager";
+import { ObjectOutliner } from "@/components/editor/ObjectOutliner";
 import { useWallStore, undo, redo } from "@/lib/store";
 import { loadState, saveState } from "@/lib/persist";
 import { exportGLTF, screenshotCanvas } from "@/lib/export";
@@ -225,7 +226,10 @@ export function EditorLayout() {
         </main>
 
         {/* Properties Panel */}
-        <WallProperties />
+        <aside className="w-64 shrink-0 border-l border-slate-800 bg-slate-900/50 overflow-y-auto">
+          <ObjectOutliner />
+          <WallProperties />
+        </aside>
       </div>
 
       {/* Wall Creation Modal */}
