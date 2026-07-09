@@ -36,6 +36,7 @@ export interface FurnitureObject {
   scale: number;
   animated: boolean;
   lightOn: boolean;
+  materialId: string | null;
   color: string;
   width: number;
   height: number;
@@ -113,6 +114,7 @@ interface WallStore {
   toggleAnimation: (id: string) => void;
   setGizmoMode: (mode: "translate" | "rotate") => void;
   toggleLight: (id: string) => void;
+  setMaterial: (id: string, materialId: string | null) => void;
   shadowQuality: number;
   setShadowQuality: (size: number) => void;
   clearScene: () => void;
@@ -187,6 +189,7 @@ export const useWallStore = create<WallStore>()(
           scale: 1,
           animated: false,
           lightOn: false,
+          materialId: null,
           color: color ?? cat.defaultColor,
           width: cat.defaultWidth,
           height: cat.defaultHeight,
@@ -235,6 +238,13 @@ export const useWallStore = create<WallStore>()(
         })),
 
       setShadowQuality: (size) => set({ shadowQuality: size }),
+
+      setMaterial: (id, materialId) =>
+        set((s) => ({
+          objects: s.objects.map((o) =>
+            o.id === id ? { ...o, materialId } : o
+          ),
+        })),
 
       clearScene: () => {
         set({ walls: [], objects: [], selectedWallId: null, selectedObjectId: null });

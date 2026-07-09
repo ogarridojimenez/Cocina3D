@@ -38,10 +38,10 @@ export function FurnitureMesh({ object }: Props) {
     [object.id, object.position.x, object.position.z, object.width, object.height, object.depth, object.rotation, object.scale, objects, walls]
   );
 
-  // Build geometry when type, color, or dimensions change
+  // Build geometry when type, color, dimensions, or material change
   const { group, doorGroup } = useMemo(
-    () => buildGeometry(object.type, object.color, object.width, object.height, object.depth),
-    [object.type, object.color, object.width, object.height, object.depth]
+    () => buildGeometry(object.type, object.color, object.width, object.height, object.depth, object.materialId),
+    [object.type, object.color, object.width, object.height, object.depth, object.materialId]
   );
 
   // Tint material red when colliding (must be AFTER group is created)

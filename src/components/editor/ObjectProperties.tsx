@@ -10,6 +10,7 @@ export function ObjectProperties() {
   const removeObject = useWallStore((s) => s.removeObject);
   const toggleAnimation = useWallStore((s) => s.toggleAnimation);
   const toggleLight = useWallStore((s) => s.toggleLight);
+  const setMaterial = useWallStore((s) => s.setMaterial);
   const shadowQuality = useWallStore((s) => s.shadowQuality);
   const setShadowQuality = useWallStore((s) => s.setShadowQuality);
 
@@ -148,6 +149,33 @@ export function ObjectProperties() {
             </span>
           </div>
         </div>
+      </div>
+
+      {/* Material selector */}
+      <div className="border-b border-slate-800 px-4 py-3">
+        <h3 className="mb-2.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+          <span>🎨</span> MATERIAL
+        </h3>
+        <select
+          value={obj.materialId ?? ""}
+          onChange={(e) => setMaterial(obj.id, e.target.value || null)}
+          className="w-full rounded-md border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-xs text-slate-200"
+        >
+          <option value="">Color sólido</option>
+          <option disabled className="text-slate-600">── Madera ──</option>
+          <option value="oak">Roble</option>
+          <option value="walnut">Nogal</option>
+          <option value="pine">Pino</option>
+          <option value="wenge">Wengué</option>
+          <option value="cherry">Cerezo</option>
+          <option disabled className="text-slate-600">── Piedra ──</option>
+          <option value="marble">Mármol Blanco</option>
+          <option value="granite">Granito Gris</option>
+          <option value="slate">Pizarra Negra</option>
+          <option disabled className="text-slate-600">── Metal ──</option>
+          <option value="steel">Acero Cepillado</option>
+          <option value="brass">Latón</option>
+        </select>
       </div>
 
       {/* Animation toggle */}

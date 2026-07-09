@@ -1,12 +1,20 @@
 import * as THREE from "three";
 import { getCatalogItem, type ObjectType } from "@/data/catalog";
+import { buildPBRMaterial } from "@/lib/materials";
 
 interface BuildResult {
   group: THREE.Group;
   doorGroup: THREE.Group | null;
 }
 
-export function buildGeometry(type: ObjectType, color: string, width: number, height: number, depth: number): BuildResult {
+export function buildGeometry(
+  type: ObjectType,
+  color: string,
+  width: number,
+  height: number,
+  depth: number,
+  materialId: string | null = null
+): BuildResult {
   const cat = getCatalogItem(type);
   const mainColor = new THREE.Color(color);
   const darkColor = mainColor.clone().multiplyScalar(0.7);
@@ -18,22 +26,29 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
   const H = height;
   const D = depth;
 
+  // Helper: build PBR material with fallback to solid color
+  const mat = (tint?: string) =>
+    materialId
+      ? buildPBRMaterial(materialId, tint ?? color)
+      : new THREE.MeshStandardMaterial({ color: tint ?? color });
+
+  // Helper: solid color variant (for handles, details, panels)
+  const solidMat = (c: string | number) =>
+    new THREE.MeshStandardMaterial({ color: c as any });
+
   switch (type) {
     // ── Cabinet Base ────────────────────────────────
     case "cabinet-base": {
-      // Main body
       const body = new THREE.Mesh(
         new THREE.BoxGeometry(W, H * 0.9, D * 0.85),
-        new THREE.MeshStandardMaterial({ color: mainColor })
+        mat()
       );
       body.position.y = H * 0.45;
       body.position.z = -D * 0.05;
       group.add(body);
 
-      // Door (animated part)
       const doorGeo = new THREE.BoxGeometry(W * 0.85, H * 0.85, 0.03);
-      const doorMat = new THREE.MeshStandardMaterial({ color: lightColor });
-      const door = new THREE.Mesh(doorGeo, doorMat);
+      const door = new THREE.Mesh(doorGeo, mat(lightColor.getHexString()));
       door.position.set(0, H * 0.45, D * 0.4);
       doorGroup = new THREE.Group();
       doorGroup.position.set(W * 0.425, H * 0.45, D * 0.4);
@@ -47,7 +62,7 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
     case "cabinet-wall": {
       const body = new THREE.Mesh(
         new THREE.BoxGeometry(W, H * 0.9, D * 0.85),
-        new THREE.MeshStandardMaterial({ color: mainColor })
+        mat()
       );
       body.position.y = H * 0.45;
       body.position.z = -D * 0.05;
@@ -55,7 +70,7 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
 
       const door = new THREE.Mesh(
         new THREE.BoxGeometry(W * 0.85, H * 0.85, 0.03),
-        new THREE.MeshStandardMaterial({ color: lightColor })
+        mat(lightColor.getHexString())
       );
       doorGroup = new THREE.Group();
       doorGroup.position.set(W * 0.425, H * 0.45, D * 0.4);
@@ -69,19 +84,18 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
     case "cabinet-drawer": {
       const body = new THREE.Mesh(
         new THREE.BoxGeometry(W, H * 0.9, D * 0.85),
-        new THREE.MeshStandardMaterial({ color: mainColor })
+        mat()
       );
       body.position.y = H * 0.45;
       body.position.z = -D * 0.05;
       group.add(body);
 
-      // 3 drawer fronts
       const drawerGroup = new THREE.Group();
       for (let i = 0; i < 3; i++) {
         const dh = H * 0.25;
         const front = new THREE.Mesh(
           new THREE.BoxGeometry(W * 0.8, dh, 0.03),
-          new THREE.MeshStandardMaterial({ color: lightColor })
+          mat(lightColor.getHexString())
         );
         front.position.set(0, H * 0.15 + i * dh * 1.1, D * 0.4);
         drawerGroup.add(front);
@@ -93,18 +107,14 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
 
     // ── Shelf ───────────────────────────────────────
     case "shelf": {
-      // Frame
-      const frameMat = new THREE.MeshStandardMaterial({ color: mainColor });
-      // Side left
+      const frameMat = mat();
       group.add(new THREE.Mesh(new THREE.BoxGeometry(0.03, H, D), frameMat).translateX(-W / 2 + 0.015).translateY(H / 2));
-      // Side right
       group.add(new THREE.Mesh(new THREE.BoxGeometry(0.03, H, D), frameMat).translateX(W / 2 - 0.015).translateY(H / 2));
-      // Shelves
       for (let i = 0; i < 4; i++) {
         const sh = H / 4;
         const shelf = new THREE.Mesh(
           new THREE.BoxGeometry(W - 0.06, 0.02, D),
-          new THREE.MeshStandardMaterial({ color: mainColor })
+          mat()
         );
         shelf.position.set(0, sh * i, 0);
         group.add(shelf);
@@ -114,12 +124,10 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
 
     // ── Table ────────────────────────────────────────
     case "table": {
-      const tableMat = new THREE.MeshStandardMaterial({ color: mainColor });
-      // Top
+      const tableMat = mat();
       group.add(
-        new THREE.Mesh(new THREE.BoxGeometry(W, 0.04, D), tableMat).translateY(H)
+        new THREE.Mesh(new THREE.BoxGeometry(W, 0.04, D), mat()).translateY(H)
       );
-      // Legs
       const legPositions = [
         [-W / 2 + 0.03, -H / 2 + 0.02, -D / 2 + 0.03],
         [W / 2 - 0.03, -H / 2 + 0.02, -D / 2 + 0.03],
@@ -137,12 +145,9 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
 
     // ── Chair ────────────────────────────────────────
     case "chair": {
-      const chairMat = new THREE.MeshStandardMaterial({ color: mainColor });
-      // Seat
+      const chairMat = mat();
       group.add(new THREE.Mesh(new THREE.BoxGeometry(W * 0.8, 0.04, D * 0.8), chairMat).translateY(H * 0.5));
-      // Backrest
       group.add(new THREE.Mesh(new THREE.BoxGeometry(W * 0.8, H * 0.5, 0.03), chairMat).translateY(H * 0.85).translateZ(-D * 0.38));
-      // 4 legs
       const cLegPos = [[-0.15, 0, -0.15], [0.15, 0, -0.15], [-0.15, 0, 0.15], [0.15, 0, 0.15]];
       const cLeg = new THREE.CylinderGeometry(0.015, 0.015, H * 0.45, 6);
       for (const pos of cLegPos) {
@@ -155,7 +160,7 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
 
     // ── Fridge ──────────────────────────────────────
     case "fridge": {
-      const bodyMat = new THREE.MeshStandardMaterial({ color: mainColor });
+      const bodyMat = mat();
       const body = new THREE.Mesh(
         new THREE.BoxGeometry(W, H * 0.95, D * 0.9),
         bodyMat
@@ -164,12 +169,13 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
       body.position.z = -D * 0.03;
       group.add(body);
 
-      // Door
-      const doorMat2 = new THREE.MeshStandardMaterial({
-        color: mainColor,
-        emissive: new THREE.Color(mainColor),
-        emissiveIntensity: 0.05,
-      });
+      const doorMat2 = materialId
+        ? mat()
+        : new THREE.MeshStandardMaterial({
+            color: mainColor,
+            emissive: new THREE.Color(mainColor),
+            emissiveIntensity: 0.05,
+          });
       const door2 = new THREE.Mesh(
         new THREE.BoxGeometry(W * 0.9, H * 0.9, 0.04),
         doorMat2
@@ -180,10 +186,9 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
       doorGroup.add(door2);
       group.add(doorGroup);
 
-      // Handle
       const handle = new THREE.Mesh(
         new THREE.CylinderGeometry(0.015, 0.015, W * 0.3, 8),
-        new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.5 })
+        solidMat(0x888888)
       );
       handle.rotation.z = Math.PI / 2;
       handle.position.set(0, H * 0.45, D * 0.44);
@@ -193,7 +198,7 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
 
     // ── Oven ────────────────────────────────────────
     case "oven": {
-      const bodyMat = new THREE.MeshStandardMaterial({ color: mainColor });
+      const bodyMat = mat();
       const body = new THREE.Mesh(
         new THREE.BoxGeometry(W, H * 0.9, D * 0.9),
         bodyMat
@@ -202,12 +207,13 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
       body.position.z = -D * 0.03;
       group.add(body);
 
-      // Door
-      const doorMat3 = new THREE.MeshStandardMaterial({
-        color: 0x111111,
-        emissive: new THREE.Color(0x111111),
-        emissiveIntensity: 0.1,
-      });
+      const doorMat3 = materialId
+        ? mat(0x111111 as any)
+        : new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            emissive: new THREE.Color(0x111111),
+            emissiveIntensity: 0.1,
+          });
       const door3 = new THREE.Mesh(
         new THREE.BoxGeometry(W * 0.8, H * 0.8, 0.04),
         doorMat3
@@ -218,10 +224,9 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
       doorGroup.add(door3);
       group.add(doorGroup);
 
-      // Handle
       const handle2 = new THREE.Mesh(
         new THREE.CylinderGeometry(0.01, 0.01, W * 0.3, 8),
-        new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.7 })
+        solidMat(0xcccccc)
       );
       handle2.rotation.z = Math.PI / 2;
       handle2.position.set(0, H * 0.45, D * 0.44);
@@ -231,7 +236,7 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
 
     // ── Microwave ───────────────────────────────────
     case "microwave": {
-      const bodyMat = new THREE.MeshStandardMaterial({ color: mainColor });
+      const bodyMat = mat();
       const body = new THREE.Mesh(
         new THREE.BoxGeometry(W, H, D),
         bodyMat
@@ -239,8 +244,7 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
       body.position.y = H / 2;
       group.add(body);
 
-      // Door
-      const doorMat4 = new THREE.MeshStandardMaterial({ color: 0x333333 });
+      const doorMat4 = materialId ? mat(0x333333 as any) : solidMat(0x333333);
       const door4 = new THREE.Mesh(
         new THREE.BoxGeometry(W * 0.8, H * 0.8, 0.02),
         doorMat4
@@ -255,17 +259,13 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
 
     // ── Countertop ──────────────────────────────────
     case "countertop": {
-      const topMat = new THREE.MeshStandardMaterial({
-        color: mainColor,
-        roughness: 0.8,
-      });
-      group.add(new THREE.Mesh(new THREE.BoxGeometry(W, H, D), topMat).translateY(H / 2));
+      group.add(new THREE.Mesh(new THREE.BoxGeometry(W, H, D), mat()).translateY(H / 2));
       break;
     }
 
     // ── Sink ────────────────────────────────────────
     case "sink": {
-      const sinkMat = new THREE.MeshStandardMaterial({
+      const sinkMat = materialId ? mat() : new THREE.MeshStandardMaterial({
         color: mainColor,
         metalness: 0.3,
         roughness: 0.5,
@@ -277,7 +277,6 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
       sinkBody.position.y = H / 2;
       group.add(sinkBody);
 
-      // Basin (depression)
       const basinMat2 = new THREE.MeshStandardMaterial({
         color: 0x555555,
         metalness: 0.7,
@@ -292,17 +291,16 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
       break;
     }
 
-    // ── Dishwasher ────────────────────────────────────
+    // ── Dishwasher ─────────────────────────────────
     case "dishwasher": {
-      const dwMat = new THREE.MeshStandardMaterial({ color: mainColor });
+      const dwMat = mat();
       const body = new THREE.Mesh(new THREE.BoxGeometry(W, H * 0.85, D * 0.9), dwMat);
       body.position.y = H * 0.425;
       group.add(body);
 
-      // Door
       const doorDw = new THREE.Mesh(
         new THREE.BoxGeometry(W * 0.8, H * 0.8, 0.03),
-        new THREE.MeshStandardMaterial({ color: lightColor })
+        mat(lightColor.getHexString())
       );
       doorGroup = new THREE.Group();
       doorGroup.position.set(W * 0.4, H * 0.425, D * 0.44);
@@ -310,9 +308,8 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
       doorGroup.add(doorDw);
       group.add(doorGroup);
 
-      // Handle
       const h3 = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, W * 0.3, 8),
-        new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.5 }));
+        solidMat(0xcccccc));
       h3.rotation.z = Math.PI / 2;
       h3.position.set(0, H * 0.25, D * 0.45);
       group.add(h3);
@@ -321,12 +318,12 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
 
     // ── Range Hood ──────────────────────────────────
     case "range-hood": {
-      const hoodMat = new THREE.MeshStandardMaterial({ color: mainColor, metalness: 0.4, roughness: 0.3 });
-      // Main body
+      const hoodMat = materialId ? mat() : new THREE.MeshStandardMaterial({
+        color: mainColor, metalness: 0.4, roughness: 0.3
+      });
       const hood = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), hoodMat);
       hood.position.y = H / 2;
       group.add(hood);
-      // Chimney
       const chimney = new THREE.Mesh(
         new THREE.BoxGeometry(W * 0.4, 0.4, D * 0.3),
         new THREE.MeshStandardMaterial({ color: darkColor, metalness: 0.3 })
@@ -338,21 +335,19 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
 
     // ── Coffee Machine ─────────────────────────────
     case "coffee-machine": {
-      const cmMat = new THREE.MeshStandardMaterial({ color: mainColor });
+      const cmMat = mat();
       const body = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), cmMat);
       body.position.y = H / 2;
       group.add(body);
-      // Top detail
       const top = new THREE.Mesh(
         new THREE.BoxGeometry(W * 0.6, 0.02, D * 0.5),
-        new THREE.MeshStandardMaterial({ color: 0x333333 })
+        solidMat(0x333333)
       );
       top.position.set(0, H + 0.01, D * 0.1);
       group.add(top);
-      // Front panel (screen/buttons)
       const panel = new THREE.Mesh(
         new THREE.BoxGeometry(W * 0.4, H * 0.2, 0.01),
-        new THREE.MeshStandardMaterial({ color: 0x111111 })
+        solidMat(0x111111)
       );
       panel.position.set(0, H * 0.5, D / 2 + 0.005);
       group.add(panel);
@@ -361,14 +356,15 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
 
     // ── Toaster ────────────────────────────────────
     case "toaster": {
-      const tMat = new THREE.MeshStandardMaterial({ color: mainColor, metalness: 0.6, roughness: 0.2 });
+      const tMat = materialId ? mat() : new THREE.MeshStandardMaterial({
+        color: mainColor, metalness: 0.6, roughness: 0.2
+      });
       const body = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), tMat);
       body.position.y = H / 2;
       group.add(body);
-      // Slot
       const slot = new THREE.Mesh(
         new THREE.BoxGeometry(W * 0.6, 0.01, D * 0.3),
-        new THREE.MeshStandardMaterial({ color: 0x222222 })
+        solidMat(0x222222)
       );
       slot.position.set(0, H + 0.005, 0);
       group.add(slot);
@@ -377,12 +373,12 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
 
     // ── Dish Rack ──────────────────────────────────
     case "dish-rack": {
-      const rMat = new THREE.MeshStandardMaterial({ color: mainColor, metalness: 0.5 });
-      // Base
+      const rMat = materialId ? mat() : new THREE.MeshStandardMaterial({
+        color: mainColor, metalness: 0.5
+      });
       const base = new THREE.Mesh(new THREE.BoxGeometry(W, 0.02, D), rMat);
       base.position.y = 0.01;
       group.add(base);
-      // Vertical bars
       for (let i = 0; i < 5; i++) {
         const bar = new THREE.Mesh(
           new THREE.CylinderGeometry(0.008, 0.008, H, 6),
@@ -396,8 +392,7 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
 
     // ── Island ─────────────────────────────────────
     case "island": {
-      const islandMat = new THREE.MeshStandardMaterial({ color: mainColor });
-      // Base cabinets (two sides)
+      const islandMat = mat();
       const cabW = W * 0.3;
       const cabD = D * 0.45;
       const cabH = H * 0.85;
@@ -406,17 +401,15 @@ export function buildGeometry(type: ObjectType, color: string, width: number, he
         cab.position.set(side * (W / 2 - cabW / 2), cabH / 2, -D / 4);
         group.add(cab);
       }
-      // Top surface
       const top2 = new THREE.Mesh(
         new THREE.BoxGeometry(W, 0.04, D),
-        new THREE.MeshStandardMaterial({ color: lightColor, roughness: 0.7 })
+        mat(lightColor.getHexString())
       );
       top2.position.y = H;
       group.add(top2);
-      // Overhang lip
       const lip = new THREE.Mesh(
         new THREE.BoxGeometry(W + 0.05, 0.02, D + 0.05),
-        new THREE.MeshStandardMaterial({ color: lightColor })
+        mat(lightColor.getHexString())
       );
       lip.position.y = H - 0.02;
       group.add(lip);

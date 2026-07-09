@@ -49,6 +49,7 @@ export function loadState() {
             height: o.height ?? 0.6,
             depth: o.depth ?? 0.6,
             posY: o.posY ?? 0,
+            materialId: o.materialId ?? null,
           });
         }
       });
