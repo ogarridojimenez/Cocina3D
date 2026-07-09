@@ -10,6 +10,7 @@ import { WallProperties } from "@/components/editor/WallProperties";
 import { CatalogPanel } from "@/components/editor/CatalogPanel";
 import { FurnitureManager } from "@/components/editor/FurnitureManager";
 import { ObjectOutliner } from "@/components/editor/ObjectOutliner";
+import { StatusBar } from "@/components/editor/StatusBar";
 import { useWallStore, undo, redo } from "@/lib/store";
 import { loadState, saveState } from "@/lib/persist";
 import { exportGLTF, screenshotCanvas } from "@/lib/export";
@@ -166,7 +167,7 @@ export function EditorLayout() {
         <CatalogPanel />
 
         {/* Toolbar */}
-        <div className="flex w-11 flex-col items-center gap-1 border-r border-slate-800 bg-slate-900/50 py-2">
+        <div className="flex w-11 flex-col items-center gap-1 border-r border-slate-800 bg-slate-900/50 py-2" title="Herramientas">
           <button
             onClick={() => { selectWall(null); selectObject(null); }}
             className="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 hover:bg-slate-800 hover:text-slate-300 transition"
@@ -190,47 +191,52 @@ export function EditorLayout() {
         </div>
 
         {/* 3D Canvas */}
-        <main className="flex-1">
-          <ErrorBoundary
-            fallback={
-              <div className="flex h-full items-center justify-center bg-slate-950 text-slate-500">
-                <div className="text-center">
-                  <p className="text-lg">⚠️</p>
-                  <p className="mt-2 text-sm">Error en la escena 3D</p>
-                  <button
-                    onClick={() => window.location.reload()}
-                    className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-xs text-white hover:bg-blue-500"
-                  >
-                    Recargar
-                  </button>
+        <main className="flex-1 flex flex-col">
+          <div className="flex-1 relative">
+            <ErrorBoundary
+              fallback={
+                <div className="flex h-full items-center justify-center bg-slate-950 text-slate-500">
+                  <div className="text-center">
+                    <p className="text-lg">⚠️</p>
+                    <p className="mt-2 text-sm">Error en la escena 3D</p>
+                    <button
+                      onClick={() => window.location.reload()}
+                      className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-xs text-white hover:bg-blue-500"
+                    >
+                      Recargar
+                    </button>
+                  </div>
                 </div>
-              </div>
-            }
-          >
-            <Canvas
-              gl={{ antialias: true, preserveDrawingBuffer: true }}
-              dpr={[1, 1.5]}
-              camera={{ position: [8, 6, 8], fov: 45, near: 0.1, far: 100 }}
-              onPointerMissed={() => {
-                selectWall(null);
-                selectObject(null);
-              }}
+              }
             >
-              <Scene>
-                <WallDrawMode />
-                <FurnitureManager />
-                <ExportManager />
-              </Scene>
-            </Canvas>
-          </ErrorBoundary>
+              <Canvas
+                gl={{ antialias: true, preserveDrawingBuffer: true }}
+                dpr={[1, 1.5]}
+                camera={{ position: [8, 6, 8], fov: 45, near: 0.1, far: 100 }}
+                onPointerMissed={() => {
+                  selectWall(null);
+                  selectObject(null);
+                }}
+              >
+                <Scene>
+                  <WallDrawMode />
+                  <FurnitureManager />
+                  <ExportManager />
+                </Scene>
+              </Canvas>
+            </ErrorBoundary>
+          </div>
         </main>
 
-        {/* Properties Panel */}
+        {/* Right Panel: Outliner + Properties */}
         <aside className="w-64 shrink-0 border-l border-slate-800 bg-slate-900/50 overflow-y-auto">
           <ObjectOutliner />
           <WallProperties />
         </aside>
       </div>
+
+      {/* Status Bar */}
+      <StatusBar />
 
       {/* Wall Creation Modal */}
       {wallMenuOpen && <WallMenu onClose={() => setWallMenuOpen(false)} />}
