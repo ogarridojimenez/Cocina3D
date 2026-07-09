@@ -179,10 +179,11 @@ export function FurnitureMesh({ object }: Props) {
         {/* Procedural geometry */}
         <primitive object={group} />
 
-        {/* Floor plane for floor objects */}
+        {/* Floor plane for floor objects (rotated 90° on X to be horizontal) */}
         {object.type === "floor" && (
           <mesh
             position={[0, 0, 0]}
+            rotation={[-Math.PI / 2, 0, 0]}
             onPointerDown={handlePointerDown}
             onDoubleClick={handleDoubleClick}
           >
