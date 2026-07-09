@@ -33,10 +33,10 @@ export function FurnitureMesh({ object }: Props) {
   const isSelected = selectedObjectId === object.id;
   const catalogItem = getCatalogItem(object.type);
 
-  // Collision detection
+  // Collision detection (skip for floor — objects sit on top of it)
   const isColliding = useMemo(
-    () => checkObjectCollision(object.id, objects, walls).collides,
-    [object.id, object.position.x, object.position.z, object.width, object.height, object.depth, object.rotation, object.scale, objects, walls]
+    () => object.type === "floor" ? false : checkObjectCollision(object.id, objects, walls).collides,
+    [object.id, object.type, object.position.x, object.position.z, object.width, object.height, object.depth, object.rotation, object.scale, objects, walls]
   );
 
   // Build geometry when type, color, dimensions, or material change
