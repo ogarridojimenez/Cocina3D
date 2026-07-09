@@ -9,7 +9,9 @@ interface BuildResult {
 
 interface BuildOptions {
   materialId?: string | null;
-  lWidth?: number;
+  lWidthX?: number;   // Extensión L en eje +X
+  lWidthZ?: number;   // Extensión L en eje +Z
+  lWidth?: number;    // Legacy - se usa como lWidthZ si existe
   hasSink?: boolean;
 }
 
@@ -425,8 +427,9 @@ export function buildGeometry(
 
     // ── Counter (Meseta) ─────────────────────────
     case "counter": {
-      const cMat = mat(lightColor.getHexString());
       const lW = (opts?.lWidth ?? 0);
+      const lX = (opts?.lWidthX ?? 0);
+      const lZ = (opts?.lWidthZ ?? lW);
       const sink = opts?.hasSink ?? false;
 
       // Base cabinets with doors
@@ -438,20 +441,24 @@ export function buildGeometry(
       const numCabs = Math.max(1, Math.floor(W / 0.6));
       const cabWidth = W / numCabs;
       for (let i = 0; i < numCabs; i++) {
+        const cx = -W / 2 + cabWidth * i + cabWidth / 2;
         const body = new THREE.Mesh(
           new THREE.BoxGeometry(cabWidth * 0.95, cabH * 0.9, cabD * 0.85),
           cabMat
         );
-        body.position.set(-W / 2 + cabWidth * i + cabWidth / 2, cabH * 0.45, -cabD * 0.05);
+        body.position.set(cx, cabH * 0.45, -cabD * 0.05);
         group.add(body);
 
+        // Puerta con pivote CORRECTO en el borde derecho de cada módulo
         const door = new THREE.Mesh(
           new THREE.BoxGeometry(cabWidth * 0.85, cabH * 0.85, 0.03),
           mat(lightColor.getHexString())
         );
         const dg = new THREE.Group();
-        dg.position.set(-W / 2 + cabWidth * i + cabWidth * 0.425, cabH * 0.45, cabD * 0.4);
-        door.position.set(-cabWidth * 0.425, 0, 0);
+        // Pivote en el borde +X del armario (bisagra)
+        dg.position.set(cx + cabWidth * 0.475, cabH * 0.45, cabD * 0.4);
+        // Puerta offset hacia la izquierda desde el pivote
+        door.position.set(-cabWidth * 0.475, 0, 0);
         dg.add(door);
         group.add(dg);
         if (doorGroup === null && i === 0) {
@@ -467,31 +474,52 @@ export function buildGeometry(
       slab.position.set(0, cabH, 0);
       group.add(slab);
 
-      // L extension (perpendicular, protrudes forward in +Z)
-      if (lW > 0) {
-        const lDepth = D; // L-leg width = counter depth
-        const lCount = Math.max(1, Math.floor(D / 0.6));
-        const lSeg = D / lCount;
-        for (let i = 0; i < lCount; i++) {
+      // L extension en +X (hacia la derecha)
+      if (lX > 0) {
+        const segCountX = Math.max(1, Math.floor(D / 0.6));
+        const segX = D / segCountX;
+        for (let i = 0; i < segCountX; i++) {
           const body = new THREE.Mesh(
-            new THREE.BoxGeometry(lDepth * 0.85, cabH * 0.9, (lW / lCount) * 0.85),
+            new THREE.BoxGeometry((lX / segCountX) * 0.85, cabH * 0.9, segX * 0.85),
             cabMat
           );
-          // Position at right end of main counter, protruding forward
           body.position.set(
-            W / 2 - lDepth / 2,
+            W / 2 + (lX / segCountX) * i + (lX / segCountX) / 2,
             cabH * 0.45,
-            D / 2 + (lW / lCount) * i + (lW / lCount) / 2
+            -D / 2 + segX * i + segX / 2
           );
           group.add(body);
         }
-        // L countertop slab
-        const lTop = new THREE.Mesh(
-          new THREE.BoxGeometry(lDepth * 0.95, 0.04, lW + 0.05),
+        const lTopX = new THREE.Mesh(
+          new THREE.BoxGeometry(lX, 0.04, D + 0.05),
           mat(lightColor.getHexString())
         );
-        lTop.position.set(W / 2 - lDepth / 2, cabH, D / 2 + lW / 2);
-        group.add(lTop);
+        lTopX.position.set(W / 2 + lX / 2, cabH, 0);
+        group.add(lTopX);
+      }
+
+      // L extension en +Z — sale desde la esquina de la L (donde termina la X)
+      if (lZ > 0) {
+        const zWingX = lX > 0 ? W / 2 + lX - D / 2 : W / 2 - D / 2; // centro de la Z en la esquina
+        const segCountZ = Math.max(1, Math.floor(D / 0.6));
+        for (let i = 0; i < segCountZ; i++) {
+          const body = new THREE.Mesh(
+            new THREE.BoxGeometry(D * 0.85, cabH * 0.9, (lZ / segCountZ) * 0.85),
+            cabMat
+          );
+          body.position.set(
+            zWingX,
+            cabH * 0.45,
+            D / 2 + (lZ / segCountZ) * i + (lZ / segCountZ) / 2
+          );
+          group.add(body);
+        }
+        const lTopZ = new THREE.Mesh(
+          new THREE.BoxGeometry(D + 0.05, 0.04, lZ + 0.05),
+          mat(lightColor.getHexString())
+        );
+        lTopZ.position.set(zWingX, cabH, D / 2 + lZ / 2);
+        group.add(lTopZ);
       }
 
       // Fregadero integrado

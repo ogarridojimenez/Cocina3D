@@ -42,7 +42,9 @@ export interface FurnitureObject {
   height: number;
   depth: number;
   // Counter (meseta) specific
-  lWidth: number;   // 0 = lineal, >0 = L-shape
+  lWidth: number;    // 0 = lineal, >0 = L-shape en Z (legacy, ahora lWidthZ)
+  lWidthX: number;   // Extensión L en eje +X (derecha)
+  lWidthZ: number;   // Extensión L en eje +Z (adelante)
   hasSink: boolean; // fregadero integrado
 }
 
@@ -118,9 +120,11 @@ interface WallStore {
   setGizmoMode: (mode: "translate" | "rotate") => void;
   toggleLight: (id: string) => void;
   setMaterial: (id: string, materialId: string | null) => void;
-  setCounterProps: (id: string, props: { lWidth?: number; hasSink?: boolean }) => void;
+  setCounterProps: (id: string, props: { lWidthX?: number; lWidthZ?: number; hasSink?: boolean }) => void;
   shadowQuality: number;
   setShadowQuality: (size: number) => void;
+  floorMaterialId: string | null;
+  setFloorMaterial: (id: string | null) => void;
   clearScene: () => void;
   loadFullState: (data: { walls: Wall[]; objects: FurnitureObject[] }) => void;
 }
@@ -137,6 +141,7 @@ export const useWallStore = create<WallStore>()(
       selectedObjectId: null,
       gizmoMode: "translate" as const,
       shadowQuality: 2048,
+      floorMaterialId: null,
 
       // ── Wall actions ───────────────────────────────
 
@@ -184,17 +189,21 @@ export const useWallStore = create<WallStore>()(
 
       addObject: (type, position, color) => {
         const cat = getCatalogItem(type);
+        const isWallObject = cat.mountType === "wall";
+        const isCounter = cat.mountType === "counter";
         const obj: FurnitureObject = {
           id: nextObjId(),
           type,
-          position: position ?? { x: 0, z: 2 },
-          posY: cat.mountType === "wall" ? cat.mountHeight : cat.mountType === "counter" ? 0.85 : 0,
+          position: position ?? (isWallObject ? { x: 0, z: 0 } : isCounter ? { x: 0, z: 2 } : { x: 0, z: 2 }),
+          posY: isWallObject ? cat.mountHeight : isCounter ? 0.85 : 0,
           rotation: 0,
           scale: 1,
           animated: false,
           lightOn: false,
           materialId: null,
           lWidth: 0,
+          lWidthX: 0,
+          lWidthZ: 0,
           hasSink: false,
           color: color ?? cat.defaultColor,
           width: cat.defaultWidth,
@@ -252,11 +261,18 @@ export const useWallStore = create<WallStore>()(
           ),
         })),
 
+      setFloorMaterial: (id) => set({ floorMaterialId: id }),
+
       setCounterProps: (id, props) =>
         set((s) => ({
           objects: s.objects.map((o) =>
             o.id === id
-              ? { ...o, ...(props.lWidth !== undefined ? { lWidth: props.lWidth } : {}), ...(props.hasSink !== undefined ? { hasSink: props.hasSink } : {}) }
+              ? {
+                  ...o,
+                  ...(props.lWidthX !== undefined ? { lWidthX: props.lWidthX } : {}),
+                  ...(props.lWidthZ !== undefined ? { lWidthZ: props.lWidthZ } : {}),
+                  ...(props.hasSink !== undefined ? { hasSink: props.hasSink } : {}),
+                }
               : o
           ),
         })),

@@ -1,7 +1,9 @@
+export type MaterialCategory = "madera" | "piedra" | "metal" | "suelo";
+
 export interface MaterialDef {
   id: string;
   name: string;
-  category: "madera" | "piedra" | "metal";
+  category: MaterialCategory;
   baseColor: string;
   roughness: number;
   metalness: number;
@@ -90,6 +92,48 @@ export const MATERIALS: MaterialDef[] = [
     baseColor: "#C5A55A",
     roughness: 0.3,
     metalness: 0.7,
+  },
+
+  // ── Suelo ────────────────────────────────────────────
+  {
+    id: "floor-tile",
+    name: "Baldosa blanca",
+    category: "suelo",
+    baseColor: "#E8E4DC",
+    roughness: 0.5,
+    metalness: 0.05,
+  },
+  {
+    id: "floor-parquet",
+    name: "Parquet roble",
+    category: "suelo",
+    baseColor: "#C4956A",
+    roughness: 0.7,
+    metalness: 0,
+  },
+  {
+    id: "floor-slate",
+    name: "Pizarra gris",
+    category: "suelo",
+    baseColor: "#4A4A4A",
+    roughness: 0.85,
+    metalness: 0,
+  },
+  {
+    id: "floor-terrazzo",
+    name: "Terrazo claro",
+    category: "suelo",
+    baseColor: "#D4CFC5",
+    roughness: 0.6,
+    metalness: 0,
+  },
+  {
+    id: "floor-concrete",
+    name: "Hormigón pulido",
+    category: "suelo",
+    baseColor: "#A8A8A8",
+    roughness: 0.7,
+    metalness: 0.05,
   },
 ];
 

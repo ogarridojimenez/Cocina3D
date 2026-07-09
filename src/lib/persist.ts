@@ -51,6 +51,8 @@ export function loadState() {
             posY: o.posY ?? 0,
             materialId: o.materialId ?? null,
             lWidth: o.lWidth ?? 0,
+            lWidthX: o.lWidthX ?? 0,
+            lWidthZ: o.lWidthZ ?? 0,
             hasSink: o.hasSink ?? false,
           });
         }

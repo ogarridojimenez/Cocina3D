@@ -137,29 +137,41 @@ export function ObjectProperties() {
             <span>🔲</span> CONFIG. MESETA
           </h3>
           <div className="space-y-2">
-            <Field label="Ancho L" unit="m">
-              <input
-                type="number"
-                min={0}
-                max={5}
-                step={0.1}
-                value={obj.lWidth}
-                onChange={(e) => setCounterProps(obj.id, { lWidth: Number(e.target.value) })}
-                className="w-full rounded-md border border-slate-700 bg-slate-800/60 px-2.5 py-1.5 text-sm text-slate-200 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20"
-                placeholder="0 = lineal"
-              />
-            </Field>
-            <label className="flex items-center gap-2 text-[11px] text-slate-400 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={obj.hasSink ?? false}
-                onChange={(e) => setCounterProps(obj.id, { hasSink: e.target.checked })}
-                className="rounded border-slate-600 bg-slate-800 text-blue-500"
-              />
-              Fregadero integrado
-            </label>
-          </div>
+            <div className="space-y-2.5">
+              <Field label="Ancho L (eje X)" unit="m">
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  value={obj.lWidthX ?? 0}
+                  onChange={(e) => setCounterProps(obj.id, { lWidthX: Math.max(0, parseFloat(e.target.value) || 0) })}
+                  className="w-full rounded-md border border-slate-700 bg-slate-800/60 px-2.5 py-1.5 text-sm text-slate-200 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20"
+                  placeholder="0 = sin extensión"
+                />
+              </Field>
+              <Field label="Ancho L (eje Z)" unit="m">
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  value={obj.lWidthZ ?? 0}
+                  onChange={(e) => setCounterProps(obj.id, { lWidthZ: Math.max(0, parseFloat(e.target.value) || 0) })}
+                  className="w-full rounded-md border border-slate-700 bg-slate-800/60 px-2.5 py-1.5 text-sm text-slate-200 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20"
+                  placeholder="0 = sin extensión"
+                />
+              </Field>
+              <label className="flex items-center gap-2 text-[11px] text-slate-400 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={obj.hasSink ?? false}
+                  onChange={(e) => setCounterProps(obj.id, { hasSink: e.target.checked })}
+                  className="rounded border-slate-600 bg-slate-800 text-blue-500"
+                />
+                Fregadero integrado
+              </label>
+            </div>
         </div>
+      </div>
       )}
 
       {/* Color */}
