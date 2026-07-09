@@ -17,9 +17,10 @@ export type ObjectType =
   | "dish-rack"
   | "island"
   | "counter"
-  | "tv";
+  | "tv"
+  | "floor";
 
-export type Category = "Muebles" | "Electrodomésticos" | "Encimera" | "Accesorios" | "Campana" | "Mesetas" | "Pared";
+export type Category = "Muebles" | "Electrodomésticos" | "Encimera" | "Accesorios" | "Campana" | "Mesetas" | "Pared" | "Suelo";
 export type AnimationType = "door" | "drawer" | "none";
 export type MountType = "floor" | "wall" | "counter";
 
@@ -296,6 +297,20 @@ export const CATALOG: CatalogItem[] = [
     mountType: "floor",
     mountHeight: 0,
   },
+  // ── Suelo ───────────────────────────────────────
+  {
+    id: "floor",
+    name: "Suelo",
+    category: "Suelo",
+    icon: "🏟️",
+    defaultWidth: 10,
+    defaultHeight: 0.02,
+    defaultDepth: 10,
+    defaultColor: "#888888",
+    animationType: "none",
+    mountType: "floor",
+    mountHeight: 0,
+  },
 ];
 
 export function getCatalogItem(type: ObjectType): CatalogItem {
@@ -310,6 +325,7 @@ export const CATEGORIES: Category[] = [
   "Accesorios",
   "Mesetas",
   "Pared",
+  "Suelo",
 ];
 
 export function getItemsByCategory(category: Category): CatalogItem[] {

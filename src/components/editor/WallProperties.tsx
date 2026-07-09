@@ -4,8 +4,6 @@ import { useWallStore } from "@/lib/store";
 import { getCatalogItem } from "@/data/catalog";
 import { ObjectProperties } from "./ObjectProperties";
 import { TextureSelector } from "./TextureSelector";
-import { MATERIALS } from "@/data/materials";
-import { useCallback } from "react";
 
 const GROSORES = [0.05, 0.10, 0.15, 0.20];
 
@@ -22,18 +20,10 @@ export function WallProperties() {
     return <ObjectProperties />;
   }
 
-  // ── Empty state: show floor controls ────────
+  // ── Empty state ────────
   if (!wall) {
     return (
       <aside className="w-64 border-l border-slate-800 bg-slate-900/80 overflow-y-auto">
-        {/* Floor section */}
-        <div className="border-b border-slate-800 px-4 py-3">
-          <h3 className="mb-2.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="2"/></svg>
-            PISO
-          </h3>
-          <FloorSelector />
-        </div>
         <div className="flex flex-col items-center justify-center h-full gap-2 px-6 text-center">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-slate-600">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -185,43 +175,4 @@ function Field({ label, unit, children }: { label: string; unit: string; childre
   );
 }
 
-// ── Floor Selector ─────────────────────────────────
 
-const FLOOR_OPTIONS = [
-  { label: "Ninguno", value: "" },
-  { label: "Baldosa", value: "floor-tile" },
-  { label: "Parquet", value: "floor-parquet" },
-  { label: "Pizarra", value: "floor-slate" },
-  { label: "Terrazo", value: "floor-terrazzo" },
-  { label: "Hormigón", value: "floor-concrete" },
-];
-
-function FloorSelector() {
-  const floorMaterialId = useWallStore((s) => s.floorMaterialId);
-  const setFloorMaterial = useWallStore((s) => s.setFloorMaterial);
-
-  return (
-    <div className="space-y-2">
-      <div className="grid grid-cols-2 gap-1.5">
-        {FLOOR_OPTIONS.map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => setFloorMaterial(opt.value || null)}
-            className={`rounded-md border px-2 py-1.5 text-[11px] font-medium transition ${
-              (opt.value === "" && !floorMaterialId) || floorMaterialId === opt.value
-                ? "border-blue-600 bg-blue-600/20 text-blue-400"
-                : "border-slate-700 bg-slate-800/40 text-slate-400 hover:border-slate-600 hover:text-slate-300"
-            }`}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
-      <div className="text-[10px] text-slate-600">
-        {floorMaterialId
-          ? `Piso: ${MATERIALS.find((m) => m.id === floorMaterialId)?.name ?? floorMaterialId}`
-          : "Piso neutro (gris claro)"}
-      </div>
-    </div>
-  );
-}

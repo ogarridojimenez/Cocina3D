@@ -98,25 +98,27 @@ export function ObjectProperties() {
             <input
               type="number"
               min={0.1}
-              max={5}
-              step={0.05}
+              max={50}
+              step={0.1}
               value={Math.round(obj.width * 100) / 100}
               onChange={(e) => updateObject(obj.id, { width: Number(e.target.value) })}
               className="w-full rounded-md border border-slate-700 bg-slate-800/60 px-2.5 py-1.5 text-sm text-slate-200 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20"
             />
           </Field>
-          <Field label="Alto" unit="m">
-            <input
-              type="number"
-              min={0.1}
-              max={5}
-              step={0.05}
-              value={Math.round(obj.height * 100) / 100}
-              onChange={(e) => updateObject(obj.id, { height: Number(e.target.value) })}
-              className="w-full rounded-md border border-slate-700 bg-slate-800/60 px-2.5 py-1.5 text-sm text-slate-200 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20"
-            />
-          </Field>
-          <Field label="Fondo" unit="m">
+          {obj.type !== "floor" && (
+            <Field label="Alto" unit="m">
+              <input
+                type="number"
+                min={0.01}
+                max={5}
+                step={0.05}
+                value={Math.round(obj.height * 100) / 100}
+                onChange={(e) => updateObject(obj.id, { height: Number(e.target.value) })}
+                className="w-full rounded-md border border-slate-700 bg-slate-800/60 px-2.5 py-1.5 text-sm text-slate-200 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/20"
+              />
+            </Field>
+          )}
+          <Field label={obj.type === "floor" ? "Largo" : "Fondo"} unit="m">
             <input
               type="number"
               min={0.1}
@@ -220,6 +222,12 @@ export function ObjectProperties() {
           <option disabled className="text-slate-600">── Metal ──</option>
           <option value="steel">Acero Cepillado</option>
           <option value="brass">Latón</option>
+          <option disabled className="text-slate-600">── Suelo ──</option>
+          <option value="floor-tile">Baldosa</option>
+          <option value="floor-parquet">Parquet</option>
+          <option value="floor-slate">Pizarra</option>
+          <option value="floor-terrazzo">Terrazo</option>
+          <option value="floor-concrete">Hormigón</option>
         </select>
       </div>
 

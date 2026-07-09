@@ -18,6 +18,7 @@ export function CatalogPanel() {
     Campana: false,
     Mesetas: false,
     Pared: false,
+    Suelo: false,
   });
 
   const toggle = (cat: Category) =>
@@ -31,6 +32,7 @@ export function CatalogPanel() {
     Campana: "💨",
     Mesetas: "🔲",
     Pared: "📺",
+    Suelo: "🏟️",
   };
 
   return (

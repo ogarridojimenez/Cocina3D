@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 import { GridFloor } from "./GridFloor";
-import { FloorPlane } from "./FloorPlane";
 import { Lighting } from "./Lighting";
 import { CameraController } from "./CameraController";
 import { WallManager } from "@/components/editor/WallManager";
@@ -16,7 +15,6 @@ export function Scene({ children }: Props) {
     <>
       <Lighting />
       <CameraController />
-      <FloorPlane />
       <GridFloor />
       <WallManager />
       {children}

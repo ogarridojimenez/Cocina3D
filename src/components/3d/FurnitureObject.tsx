@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { useWallStore, type FurnitureObject } from "@/lib/store";
 import { getCatalogItem } from "@/data/catalog";
 import { buildGeometry } from "@/components/editor/proceduralGeometry";
+import { buildPBRMaterial } from "@/lib/materials";
 import { checkObjectCollision } from "@/lib/collisions";
 
 interface Props {
@@ -40,8 +41,18 @@ export function FurnitureMesh({ object }: Props) {
 
   // Build geometry when type, color, dimensions, or material change
   const { group, doorGroup } = useMemo(
-    () => buildGeometry(object.type, object.color, object.width, object.height, object.depth, object.materialId, { lWidthX: object.lWidthX, lWidthZ: object.lWidthZ, hasSink: object.hasSink }),
+    () => object.type === "floor"
+      ? { group: new THREE.Group(), doorGroup: null }
+      : buildGeometry(object.type, object.color, object.width, object.height, object.depth, object.materialId, { lWidthX: object.lWidthX, lWidthZ: object.lWidthZ, hasSink: object.hasSink }),
     [object.type, object.color, object.width, object.height, object.depth, object.materialId, object.lWidthX, object.lWidthZ, object.hasSink]
+  );
+
+  // Floor material (PBR or plain color)
+  const floorMaterial = useMemo(
+    () => object.type === "floor" && object.materialId
+      ? buildPBRMaterial(object.materialId, object.color)
+      : null,
+    [object.type, object.materialId, object.color]
   );
 
   // Tint material red when colliding (must be AFTER group is created)
@@ -167,6 +178,26 @@ export function FurnitureMesh({ object }: Props) {
       >
         {/* Procedural geometry */}
         <primitive object={group} />
+
+        {/* Floor plane for floor objects */}
+        {object.type === "floor" && (
+          <mesh
+            position={[0, 0, 0]}
+            onPointerDown={handlePointerDown}
+            onDoubleClick={handleDoubleClick}
+          >
+            <planeGeometry args={[object.width, object.depth]} />
+            {floorMaterial ? (
+              <primitive object={floorMaterial} attach="material" />
+            ) : (
+              <meshStandardMaterial
+                color={object.color}
+                roughness={0.8}
+                metalness={0}
+              />
+            )}
+          </mesh>
+        )}
 
         {/* Door group reference for animation */}
         {doorGroup && <primitive object={doorGroup} ref={doorRef as any} />}

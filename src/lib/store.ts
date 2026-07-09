@@ -123,8 +123,6 @@ interface WallStore {
   setCounterProps: (id: string, props: { lWidthX?: number; lWidthZ?: number; hasSink?: boolean }) => void;
   shadowQuality: number;
   setShadowQuality: (size: number) => void;
-  floorMaterialId: string | null;
-  setFloorMaterial: (id: string | null) => void;
   clearScene: () => void;
   loadFullState: (data: { walls: Wall[]; objects: FurnitureObject[] }) => void;
 }
@@ -141,7 +139,6 @@ export const useWallStore = create<WallStore>()(
       selectedObjectId: null,
       gizmoMode: "translate" as const,
       shadowQuality: 2048,
-      floorMaterialId: null,
 
       // ── Wall actions ───────────────────────────────
 
@@ -260,8 +257,6 @@ export const useWallStore = create<WallStore>()(
             o.id === id ? { ...o, materialId } : o
           ),
         })),
-
-      setFloorMaterial: (id) => set({ floorMaterialId: id }),
 
       setCounterProps: (id, props) =>
         set((s) => ({
