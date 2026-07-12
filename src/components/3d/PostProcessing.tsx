@@ -5,7 +5,7 @@ import { useThree } from "@react-three/fiber";
 import {
   EffectComposer,
   Bloom,
-  SSAO,
+  N8AO,
   SMAA,
   ToneMapping,
 } from "@react-three/postprocessing";
@@ -23,11 +23,18 @@ export function PostProcessing() {
       {/* SMAA — Antialiasing de calidad */}
       <SMAA />
 
-      {/* SSAO — Oclusión ambiental para profundidad */}
-      <SSAO
-        intensity={20}
-        radius={0.15}
-        bias={0.5}
+      {/* N8AO — Oclusión ambiental (no necesita NormalPass) */}
+      <N8AO
+        halfRes={false}
+        aoRadius={0.5}
+        intensity={1.5}
+        distanceFalloff={1}
+        quality="high"
+        aoSamples={16}
+        denoiseSamples={8}
+        denoiseRadius={12}
+        screenSpaceRadius
+        depthAwareUpsampling
       />
 
       {/* Bloom — Solo objetos emisivos (intensidad baja) */}
