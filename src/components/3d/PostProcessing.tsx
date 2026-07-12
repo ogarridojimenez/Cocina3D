@@ -25,14 +25,9 @@ export function PostProcessing() {
 
       {/* SSAO — Oclusión ambiental para profundidad */}
       <SSAO
-        intensity={30}
-        radius={0.25}
+        intensity={20}
+        radius={0.15}
         bias={0.5}
-        distanceThreshold={0.1}
-        distanceFalloff={0.05}
-        rangeThreshold={0.01}
-        rangeFalloff={0.01}
-        luminanceInfluence={0.5}
       />
 
       {/* Bloom — Solo objetos emisivos (intensidad baja) */}
