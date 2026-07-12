@@ -35,7 +35,6 @@
 
 | Prioridad | Feature | Esfuerzo | Descripción |
 |:---------:|---------|:--------:|-------------|
-| 🔜 | **Multiusuario** | Alto | Edición colaborativa en tiempo real (WebSocket + CRDT) |
-| 2 | **Render fotorrealista** | Alto | Render cloud con iluminación global |
-| 3 | **IA sugerencias** | Alto | Distribución automática de muebles con IA |
-| 4 | **Visor VR/AR** | Medio | WebXR para ver cocina en realidad aumentada |
+| 🔜 | **Render fotorrealista** | Alto | Iluminación global, post-process, calidad profesional |
+| 2 | **IA sugerencias** | Alto | Distribución automática de muebles con IA |
+| 3 | **Visor VR/AR** | Medio | WebXR para ver cocina en realidad aumentada |
