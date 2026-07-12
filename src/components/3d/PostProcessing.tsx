@@ -23,25 +23,23 @@ export function PostProcessing() {
       {/* SMAA — Antialiasing de calidad */}
       <SMAA />
 
-      {/* N8AO — Oclusión ambiental (no necesita NormalPass) */}
+      {/* N8AO — Oclusión ambiental (config photorealistic de Context7) */}
       <N8AO
-        halfRes={false}
-        aoRadius={0.5}
-        intensity={1.5}
-        distanceFalloff={1}
         quality="high"
-        aoSamples={16}
+        aoRadius={6}
+        intensity={1.2}
+        distanceFalloff={0.8}
+        aoSamples={32}
         denoiseSamples={8}
         denoiseRadius={12}
-        screenSpaceRadius
         depthAwareUpsampling
       />
 
-      {/* Bloom — Solo objetos emisivos (intensidad baja) */}
+      {/* Bloom — Solo objetos emisivos */}
       <Bloom
         intensity={0.3}
-        luminanceThreshold={0.9}
-        luminanceSmoothing={0.1}
+        luminanceThreshold={0.8}
+        luminanceSmoothing={0.9}
         mipmapBlur
       />
 
